@@ -1,5 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, NgZone, OnDestroy, OnInit} from "@angular/core";
 import {BoxGeometry, Camera, Geometry, Material, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import * as DXF from "dxf";
+import {FileChangeEvent} from "@angular/compiler-cli/src/perform_watch";
 
 /**
  * Viewer component displaying the building plan, etc.
@@ -65,6 +67,19 @@ export class ViewerComponent implements OnInit, OnDestroy {
 		this.zone.runOutsideAngular(() => {
 			animate();
 		});
+	}
+
+	public readFile(file: File): void {
+		const reader: FileReader = new FileReader();
+		reader.onload = (e) => {
+			const contents: string | ArrayBuffer = e.target.result;
+
+			const helper = new DXF.Helper(contents);
+			console.log(helper.parsed);
+			console.log(helper.denormalized);
+			console.log(helper.toPolylines());
+		};
+		reader.readAsText(file);
 	}
 
 }
