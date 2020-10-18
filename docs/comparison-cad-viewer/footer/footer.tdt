@@ -1,0 +1,3 @@
+#TABLE, '
+*#DATE, format="dd.MM.yyyy HH:mm"#* | #VAR, var.author# | Seite **#PAGE#**
+', class=footer-table#

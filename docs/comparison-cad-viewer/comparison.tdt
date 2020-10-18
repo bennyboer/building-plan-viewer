@@ -1,0 +1,134 @@
+#TITLE# Vergleich von CAD-Viewer Programmen und Anforderungen
+
+#H1, numbered=false# Inhalt
+
+#TOC#
+
+
+#H1# Einleitung
+
+Im Folgenden wollen wir die nachfolgend aufgelisteten, kostenlos verfügbaren, CAD-Viewer Programme ausprobieren.
+Die genannten Produkte sind durch eine Internetrecherche zum Thema CAD-Viewer aufgetaucht.
+
+- Autodesk Viewer
+- DWG TrueView
+- eDrawings Viewer
+- ABViewer
+
+Danach sollte eine Auflistung von Anforderungen möglich sein, die - neben den bereits gegebenen Anforderungen - für das neue Visualisierungswerkzeug für Gebäudepläne sinnvoll erscheinen.
+
+
+#BREAK, type=page#
+
+#H1# Autodesk Viewer
+
+#IMAGE,
+src="res/autodesk-viewer.png",
+width=350
+#
+
+Das Programm *Autodesk Viewer* vom ursprünglichen Entwickler des DXF-Formats Autodesk #CITE, 'DXFReference'# ist eine web-basierte Lösung zur Ansicht von CAD-Dateien #CITE, 'AutodeskViewer'#.
+Zur Verwendung reicht ein Browser und ein Aufruf von https://viewer.autodesk.com sowie ein vorhandenes Benutzerkonto bei Autodesk.
+
+Die Dateien zur Ansicht müssen dort hochgeladen werden.
+Danach kann im Beispielgebäudeplan per Maus navigiert werden (Mausrad zum Anpassen des Maßstabs, Ziehen mit der Maus zum Verschieben).
+Des Weiteren stehen Funktionen zum Messen zwischen verschiedenen Punkten und zum Markieren einer bestimmten Stelle oder eines Bereichs zur Verfügung.
+Außerdem kann der Anwender den geöffneten Gebäudeplan im Rastergrafikformat PNG herunterladen.
+In der resultierenden PNG-Dateien befinden sich auch alle vorgenommenen Markierungen und Messungen.
+
+
+#BREAK, type=page#
+
+#H1# DWG TrueView
+
+#IMAGE,
+src="res/dwg-trueviewer.png",
+width=350
+#
+
+*DWG TrueView* ist wie Autodesk Viewer ein Produkt vom Hersteller Autodesk #CITE, 'DWGTrueView'#.
+Im Gegensatz zu Autodesk Viewer ist jedoch eine Installation des Programmes notwendig, dessen Setup-Programm aktuell eine Dateigröße von über einem halben Gigabyte besitzt.
+Zur Installation sind derzeit weitere 1,42 Gigabyte notwendig.
+Laut einer Vergleichsseite von Autodesks Viewerprogrammen unter https://www.autodesk.de/viewers/all-viewers/compare unterscheidet sich das Programm von Autodesk Viewer nur unwesentlich und unterstützt weniger Dateiformate.
+
+Vom Featureumfang unterscheidet es sich zu Autodesk Viewer lediglich durch eine Option zwischen verschiedenen DWG Versionen zu konvertieren (Autodesks proprietäres CAD-Dateiformat #CITE, 'DWGTrueView'#).
+
+
+#BREAK, type=page#
+
+#H1# eDrawings Viewer
+
+#IMAGE,
+src="res/edrawings-viewer.png",
+width=350
+#
+
+Der *eDrawings Viewer* ist ein weiteres Viewer-Programm für CAD-Dateien #CITE, 'eDrawingsViewer'#.
+Es ist ebenfalls eine lokale Installation der Anwendung notwendig.
+
+Die Anwendung ist vom Featureumfang wieder sehr ähnlich zum Autodesk Viewer oder DWG TrueView.
+Es gibt Funktionen durch den Gebäudeplan zu navigieren (Zoom & Pan), Messungen vorzunehmen und Bereiche zu markieren.
+
+
+#BREAK, type=PAGE#
+
+#H1# ABViewer
+
+#IMAGE,
+src="res/abviewer.png",
+width=350
+#
+
+*ABViewer* ist ein weiteres Produkt zur Anzeige von CAD-Dateien, welches nach lokaler Installation verwendet werden kann #CITE, 'ABViewer'#.
+Wir finden wieder die klassischen Elemente, wie auch bei den bereits betrachteten Programmen: Pan & Zoom, Messungen und Markierungen.
+
+
+#BREAK, type=page#
+
+#H1# Zusammenfassung
+
+Die betrachteten Programme weisen wenig spannende Unterschiede auf, lediglich Autodesk Viewer ist web-basiert und fällt daher auf.
+Vom Funktionsumfang sind alle vier Anwendungen sehr ähnlich.
+Das macht es uns leicht Anforderungen für das neue Visualisierungstool für Gebäudepläne zu konstruieren.
+
+Zusammenfassend finden sich drei Funktionen, die in jedem der ausprobierten Viewer zur Verfügung stehen:
+- Pan & Zoom
+- Messen
+- Markieren
+
+Davon erscheint lediglich **Pan & Zoom der Arbeitsfläche** als sinnvoll für unsere Anwendung, um auch in großen und komplexen Gebäudeplänen navigieren zu können.
+Diese neue Anforderung bildet zusammen mit den bereits gegebenen Anforderungen eine gute Basis für die weitere Entwicklung der Anwendung.
+
+
+#H1# Anforderungen
+
+Nun wollen wir die Anforderungen für die neue Anwendung gesammelt auflisten.
+Dabei sammeln wir sowohl funktionale, als auch nicht-funktionale Anforderungen.
+
+#H2# Funktionale Anforderungen
+
+#TABLE, '
+Nr. | Anforderung | Weitere Informationen
+**A1** | Anzeigen einer 2-dimensionalen \*.dxf Datei | Die Anwendung soll Dateien im DXF Format laden und darstellen können.
+**A2** | Navigation in der Benutzeroberfläche | Gerade größere Gebäudepläne können unübersichtlich sein, daher muss eine geeignete Navigation möglich sein.
+**A2.1** | Verschieben der Arbeitsfläche | Die Arbeitsfläche soll per Mausklick (linke Maustaste) und Ziehen verschoben werden können.
+**A2.2** | Verkleinern und Vergrößern der Arbeitsfläche | Die Arbeitsfläche soll mit dem Mausrad vergrößert und verkleinert werden.
+**A2.2.1** | Verkleinern der Arbeitsfläche | Bewegung des Mausrads nach unten soll die Arbeitsfläche (den Abbildungsmaßstab) verkleinern.
+**A2.2.2** | Vergrößern der Arbeitsfläche | Bewegung des Mausrads nach oben soll die Arbeitsfläche (den Abbildungsmaßstab) vergrößern.
+**A3** | Anzeige eines Clusteringergebnisses für Räume | Als Differenzierung zu anderen CAD-Viewer Programmen sollen bestimmte Räume auf Basis eines Clustering Ergebnisses gesondert hervorgehoben werden.
+**A4** | Export des Gebäudeplans | Der Gebäudeplan und die Markierungen/Hervorhebungen durch das eingelesenen Clusteringergebnis sollen in eine Datei exportiert werden können, welche zum einfachen Teilen verschickt werden kann.
+', class=requirement-table#
+
+#H2# Nichtfunktionale Anforderungen
+
+#TABLE, '
+Nr. | Anforderung | Weitere Informationen
+**NA1** | Einfache und schnelle Bereitstellung/Installierbarkeit | Die Anwendung soll schnell und einfach bereitgestellt bzw. installiert werden können. Als Vergleichsmerkmal hierzu soll die untersuchte Anwendung *DWG TrueView* dienen.
+**NA2** | Ruckelfreie Navigation im Gebäudeplan | Die Arbeitsfläche/Der Gebäudeplan soll ruckelfrei über die Anwendung navigiert werden können. Konkret bedeutet das min. 30 Bilder pro Sekunde auf einem Referenzgerät (Hier nicht näher spezifiziert).
+', class=requirement-table#
+
+#BREAK, type=page#
+
+#H1, numbered=false# Literaturverzeichnis
+
+#REFERENCES#
