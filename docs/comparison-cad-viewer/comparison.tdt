@@ -9,7 +9,7 @@
 
 #H1# Einleitung
 
-Im Folgenden wollen wir die nachfolgend aufgelisteten, kostenlos verfügbaren, CAD-Viewer Programme ausprobieren.
+Im Folgenden wollen wir die nachfolgend aufgelisteten, kostenlos verfügbaren, CAD-Viewer Programme testen.
 Die genannten Produkte sind durch eine Internetrecherche zum Thema CAD-Viewer aufgetaucht.
 
 - Autodesk Viewer
@@ -23,7 +23,9 @@ Danach sollte eine Auflistung von Anforderungen möglich sein, die - neben den b
 
 #BREAK, type=page#
 
-#H1# Autodesk Viewer
+#H1# Viewer Vergleich
+
+#H2# Autodesk Viewer
 
 #IMAGE,
 src="res/autodesk-viewer.png",
@@ -45,7 +47,7 @@ In der resultierenden PNG-Dateien befinden sich auch alle vorgenommenen Markieru
 
 #BREAK, type=page#
 
-#H1# DWG TrueView
+#H2# DWG TrueView
 
 #IMAGE,
 src="res/dwg-trueviewer.png",
@@ -65,7 +67,7 @@ Vom Featureumfang unterscheidet es sich zu Autodesk Viewer lediglich durch eine 
 
 #BREAK, type=page#
 
-#H1# eDrawings Viewer
+#H2# eDrawings Viewer
 
 #IMAGE,
 src="res/edrawings-viewer.png",
@@ -84,7 +86,7 @@ Auch Bereiche können nach Belieben markiert werden.
 
 #BREAK, type=PAGE#
 
-#H1# ABViewer
+#H2# ABViewer
 
 #IMAGE,
 src="res/abviewer.png",
@@ -100,7 +102,7 @@ Wir finden erneut die klassischen Elemente, wie auch bei den bereits betrachtete
 
 #BREAK, type=page#
 
-#H1# DWG FastView
+#H2# DWG FastView
 
 Als letzte alternative Software betrachten wir das Programm *DWG FastView*.
 Das Produkt soll speziell zum Betrachten von CAD-Dateiformaten verwendet werden und ist in drei verschiedenen Ausführungen erhältlich: Online, für den Desktop und Mobilgeräte #CITE, 'DWGFastView'#.
@@ -115,7 +117,9 @@ label=dwg-fastview-online
 Die in #REF, dwg-fastview-online, prefix=Screenshot# dargestellte Online-Version der Anwendung zeigt einen eher minimalistischen Viewer.
 Lediglich die Navigation durch den geöffneten Beispielgebäudeplan ist möglich.
 Weiterführende Merkmale, wie Messungen vorzunehmen oder Markierungen anzubringen, sind jedoch auch hier möglich; Allerdings nur unter Windows und auf Mobilgeräten in der kostenpflichtigen Premium-Version #CITE, 'DWGFastViewPremium'#.
+
 Ein Screenshot der Windows-Version ist in #REF, dwg-fastview-windows, prefix=Abbildung# zu sehen.
+Wie bereits erwähnt werden dort weiterführende Funktionen angeboten, die nicht in der minimalistischen Webapplikation zur Verfügung stehen.
 
 #IMAGE,
 src="res/dwg-fastview.png",
@@ -128,13 +132,13 @@ label=dwg-fastview-windows
 
 #BREAK, type=page#
 
-#H1# Zusammenfassung
+#H2# Zusammenfassung
 
 Die betrachteten Programme weisen wenige Unterschiede auf, lediglich Autodesk Viewer und DWG FastView sind *web-basiert* und fallen daher auf.
 Vom Funktionsumfang sind alle vier Anwendungen sehr ähnlich.
 Das macht es uns leicht Anforderungen für das neue Visualisierungstool für Gebäudepläne zu konstruieren.
 
-Zusammenfassend finden sich drei Funktionen, die in jedem der ausprobierten Viewer zur Verfügung stehen:
+Zusammenfassend finden sich drei Funktionen, die in jedem der Viewer-Programme zur Verfügung stehen:
 
 #ENUMERATION, type=ordered#
 - Pan & Zoom
@@ -170,7 +174,7 @@ Nr. | Anforderung | Weitere Informationen
 Nr. | Anforderung | Weitere Informationen
 **NA1** | Einfache und schnelle Bereitstellung/Installierbarkeit | Die Anwendung soll schnell und einfach bereitgestellt bzw. installiert werden können. Als Vergleichsmerkmale hierzu sollen die Installationszeit und Dateigrößen der untersuchte Anwendung *DWG TrueView* auf demselben Rechner dienen.
 **NA2** | Einfache Erweiterbarkeit und Wartbarkeit | Während der Implementierung soll vor allem auf die Möglichkeit einer späteren einfachen Erweiterung der Funktionalität geachtet werden. Außerdem soll der Quellcode durch erklärende Kommentare besser wartbar werden.
-**NA3** | Übersichtliche Darstellung | Die Benutzeroberfläche soll möglichst übersichtlich und intuitiv zu bedienen sein.
+**NA3** | Übersichtliche Darstellung | Die Benutzeroberfläche wie auch die Visualisierung des Gebäudeplans sollen möglichst übersichtlich und intuitiv zu bedienen sein.
 **NA4** | Ruckelfreie Navigation im Gebäudeplan | Die Arbeitsfläche/Der Gebäudeplan soll ruckelfrei über die Anwendung navigiert werden können. Konkret bedeutet das min. 30 Bilder pro Sekunde auf einem Referenzgerät (Hier nicht näher spezifiziert).
 ', class=requirement-table#
 
