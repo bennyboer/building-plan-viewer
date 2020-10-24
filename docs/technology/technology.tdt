@@ -1,0 +1,64 @@
+#TITLE# Festlegung der verwendeten Werkzeuge
+
+#H1, numbered=false# Inhalt
+
+#TOC#
+
+
+#BREAK, type=page#
+
+#H1# Einleitung
+
+Nun, da die Anforderungen festgelegt sind, sind wir in der Lage Entscheidungen über die verwendeten Werkzeuge und Technologien zu treffen, welche bei dem neuen Werkzeug zur Gebäudeplanvisualisierung zum Einsatz kommen sollen.
+Im ersten Schritt wollen wir uns um eine Auflistung und Argumentation der verwendeten Technologien kümmern.
+
+Nachdem zum Beispiel die verwendete Programmiersprache festgelegt ist, wird unter anderem eine Bibliothek für das Lesen von CAD-Dateien gesucht.
+Die verschiedenen Möglichkeiten werden gesammelt und anschließend verglichen, um die bestmöglichen Voraussetzungen für die weitere Entwicklung der Anwendung zu schaffen.
+
+
+#BREAK, type=page#
+
+#H1# Auflistung und Argumentation der verwendeten Technologien
+
+Im vorangegangenen Vergleich von CAD-Viewer Programmen haben wir zwei grobe Kategorien von Programmen betrachtet: *web-basierte* und *klassische Desktopanwendungen*.
+Beide Varianten können mit denselben Features aufwarten und unterscheiden sich somit lediglich in der Art der Bereitstellung:
+Während die web-basierten Anwendungen durch die Eingabe einer URL in der Adresszeile eines Browsers gestartet werden können, müssen die Desktopprogramme lokal auf dem System des Benutzers installiert und gestartet werden.
+
+Anhand der nichtfunktionale Anforderung **NA1** (*Einfache und schnelle Bereitstellung/Installierbarkeit*) tendieren wir daher eher zu einer Webanwendung.
+Diese sind tendenziell schneller zu verwenden und leichter zu teilen.
+Außerdem stehen geeignete Browser praktisch jedem Endanwender zur Verfügung - selbst auf dem Smartphone.
+
+Im Gegensatz dazu verleitet die nichtfunktionale Anforderung **NA4** (*Ruckelfreie Navigation im Gebäudeplan*) eher dazu, die Gegenseite der klassischen Desktopanwendungen zu befürworten.
+Webanwendungen liefern klassischerweise weniger Performance verglichen mit Desktopanwendungen.
+Grund dafür ist die Programmiersprache *JavaScript*, welche von den verschiedenen Browserimplementierungen mehr oder weniger schnell interpretiert wird.
+Allerdings gab es in den letzten Jahren deutliche Performanceverbesserungen #CITE, 'WebAppMolecular, location=page 576'#.
+Beispielsweise gibt es speziell für das Rendering von Visualisierungen mittlerweile Unterstützung durch die vorhandene Grafikhardware des Benutzers, auf welche mit Hilfe der *WebGL* API zugegriffen werden kann #CITE, 'WebAppMolecular, location=page 576'#.
+
+Da mit der zu entwickelnden Anwendung möglichst auch äußerst komplexe und große Gebäudepläne dargestellt werden sollen, ist es sinnvoll ebenso auf der WebGL API aufzusetzen.
+Vorhandene JavaScript Bibliotheken wie *three.js* #CITE, 'ThreeJS'# kapseln die WebGL API auf einer höheren Ebene, um diese schnell und einfach zu verwenden.
+Das ist für unser Projekt ebenfalls wichtig, da die nichtfunktionale Anforderung **NA2** eine einfache Wartbarkeit fordert.
+Die WebGL API ist an OpenGL ES 2.0 angelehnt und daher nur mit dem nötigen Hintergrundwissen zu verwenden #CITE, 'WebGL'#.
+Die Bibliothek three.js scheint daher geeignet für das Projekt, um eine spätere gute Wartbarkeit sicherzustellen.
+
+JavaScript ist eine dynamisch typisierte Programmiersprache.
+Alternativen wie *TypeScript* von Microsoft hingegen versuchen eine statische Typisierung um JavaScript zu ermöglichen #CITE, 'ToTypeOrNotToType, location=page 758'#.
+Es wird oft argumentiert, dass eine statische Typisierung zu einem besseres Verständnis des Programmes, neben anderen Vorteilen, führt #CITE, 'ToTypeOrNotToType, location=page 758'#.
+Um die Wartbarkeit unseres Projekts weiter zu erhöhen, soll daher TypeScript als Programmiersprache verwendet werden.
+
+Die Entwicklung einer Webanwendung kann durch die Verwendung eines geeigneten Frameworks vereinfacht werden.
+Wir haben uns für das Framework *Angular* #CITE, 'Angular'# entschieden, da dieses bereits alle benötigten Komponenten für eine moderne UI mitliefert #CITE, 'AngularMaterial'# und standardmäßig mit TypeScript zu verwenden ist.
+
+Zusammenfassend soll das Werkzeug zur Gebäudeplanvisualisierung also als **Webanwendung** entstehen.
+Diese soll in der Programmiersprache **TypeScript** unter Verwendung des Frameworks **Angular** verfasst werden.
+Zusätzlich wird **three.js** zur einfacheren Verwendung der WebGL API verwendet, womit schlussendlich die Gebäudepläne visualisiert werden.
+
+#BREAK, type=page#
+
+#H1# Vergleich von Parserbibliotheken für CAD-Dateien
+
+
+#BREAK, type=page#
+
+#H1, numbered=false# Literaturverzeichnis
+
+#REFERENCES#
