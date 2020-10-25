@@ -52,10 +52,100 @@ Zusammenfassend soll das Werkzeug zur Gebäudeplanvisualisierung also als **Weba
 Diese soll in der Programmiersprache **TypeScript** unter Verwendung des Frameworks **Angular** verfasst werden.
 Zusätzlich wird **three.js** zur einfacheren Verwendung der WebGL API verwendet, womit schlussendlich die Gebäudepläne visualisiert werden.
 
+
 #BREAK, type=page#
 
 #H1# Vergleich von Parserbibliotheken für CAD-Dateien
 
+Mittlerweile haben wir auch die Programmiersprache TypeScript festgelegt.
+Bei der Sprache handelt es sich um ein Superscript von JavaScript, welches zum Beispiel ein statisches Typensystem einführt #CITE, 'TypeScript'#.
+Das bedeutet auch, dass es sich im Grunde um JavaScript handelt.
+Somit können Softwarebibliotheken, welche eigentlich in JavaScript geschrieben worden sind, ohne Probleme verwendet werden.
+
+Wie bereits erwähnt soll das Werkzeug zur Gebäudevisualisierung `*.dxf` Dateien lesen können.
+Im JavaScript-Ökosystem sehen wir uns damit mit einer Auswahl an geeigneten Bibliotheken konfrontiert.
+Unsere Zielsetzung für dieses Kapitel ist es, die für unsere Zwecke bestmögliche Möglichkeit zu finden.
+
+Als erster Schritt steht eine Internetrecherche auf dem Plan, welche zu einer Auflistung von Parserbibliotheken führen soll.
+Bei einer Suche über `npmjs.com` sind die folgenden Bibliotheken aufgetaucht:
+
+- **Dxf-Parser**: https://github.com/gdsestimating/dxf-parser
+- **dxf**: https://github.com/bjnortier/dxf
+- **dxftoobject**: https://github.com/douglasrolim/dxftoobject
+- **dxf2svg**: https://www.npmjs.com/package/dxf2svg
+
+Wir wollen diese nach *Performance (Ladegeschwindigkeit)*, *Lizenz*, *Beliebtheit auf `npmjs.com`*, *Aktualität* und der Güte der *Dokumentation* beurteilen.
+
+Zunächst wird die Performance gemessen, indem wir für jede Alternative dieselbe CAD-Datei lesen.
+Das Testprogramm, welches für jeden Messdurchgang durchgeführt wird, befindet sich im #REF, testapp, prefix=Codebeispiel#.
+
+#CODE, '
+public readFile(file: File): void {
+	const reader: FileReader = new FileReader();
+	reader.onload = async (e) => {
+		const dxfContentStr: string | ArrayBuffer = e.target.result;
+
+		console.log("dxf:")
+		let timer = window.performance.now();
+		const helper = new DXF.Helper(dxfContentStr);
+		console.log(helper.parsed);
+		console.log(`dxf took ${window.performance.now() - timer}ms`);
+
+		console.log("dxf2svg:");
+		timer = window.performance.now();
+		console.log(dxf2svg.parseString(dxfContentStr));
+		console.log(`dxf2svg took ${window.performance.now() - timer}ms`);
+
+		console.log("dxf2object:");
+		timer = window.performance.now();
+		await dxftoobject.default(dxfContentStr).then(result => console.log(result));
+		console.log(`dxf2object took ${window.performance.now() - timer}ms`);
+
+		console.log("dxf-parser:")
+		timer = window.performance.now();
+		console.log(new DxfParser().parseSync(dxfContentStr));
+		console.log(`dxf-parser took ${window.performance.now() - timer}ms`);
+	};
+	reader.readAsText(file);
+}
+', style=manni, language=typescript, label=testapp, caption="Testprogramm zum Messen der Ladegeschwindigkeiten der verschiedenen CAD-Datei Lesebibliotheken."#
+
+Wie aus #REF, perf, prefix=Tabelle# ersichtlich ist, reichen fünf Messungen aus, da die Standardabweichung jeweils sehr gering ist.
+
+#TABLE, '
+Messung | **Dxf-Parser** | **dxf** | **dxftoobject** | **dxf2svg**
+*1* | 35 | 69 | 936 | 52
+*2* | 35 | 40 | 892 | 44
+*3* | 45 | 52 | 873 | 56
+*4* | 43 | 65 | 933 | 66
+*5* | 34 | 61 | 900 | 52
+**Durchschnitt** | 38,4 | 57,4 | 906,8 | 54,0
+**Standardabweichung** | 4,630334761 | 10,36532682 | 24,27673784 | 7,155417528
+', caption="Ladegeschwindigkeitsmessungen der verschiedenen CAD-Datei Lesebibliotheken mit dem Testprogramm - in Millisekunden.", label=perf#
+
+#BREAK, type=page#
+
+In der folgenden #REF, nutzwert, prefix=Tabelle# werden die einzelnen Kriterien für die Bibliotheken bewertet.
+Um eine möglichst zutreffende Einschätzung zu erhalten, wird eine Nutzwertanalyse durchgeführt.
+Für alle Kriterien außer Lizenz werden die Punkte 1 - 4 vergeben.
+Die Lizenz erhält entweder 0 (Nicht in Ordnung) oder 1 (In Ordnung).
+Am Ende werden die Punkte, welche sich in der Tabelle neben jeder Einschätzung in Klammern befinden, aufsummiert und die geeigneteste Bibliothek ausgewertet.
+
+#TABLE, '
+• | **Dxf-Parser** | **dxf** | **dxftoobject** | **dxf2svg**
+Performance | `38,4ms` (4) | `57,4ms` (2) | `906,8ms` (1) | `54,0ms` (3)
+Lizenz | MIT (1) | MIT (1) | keine Angabe (0) | MIT (1)
+Beliebtheit (wöchentliche Downloads) | 634 (3) | 702 (4) | 11 (1) | 31 (2)
+Aktualität (Letztes Update) | 29.11.2019 (2) | 16.07.2020 (4) | 23.12.2019 (3) | 20.03.2019 (1)
+Dokumentation | Zufriedenstellend (Quellcode vorhanden) (3) | Umfangreich (Quellcode vorhanden) (4) | Wenig (Quellcode vorhanden) (2) | Wenig bis nicht vorhanden (kein Quellcode vorhanden) (1)
+**Summe der Punkte** | 13 | 15 | 7 | 8
+', caption="Vergleich der verschiedenen CAD-Datei Parserbibliotheken", label=nutzwert#
+
+Es wird also die Bibliothek **dxf** ausgewählt, da diese die höchste Punktzahl erhalten hat.
+Ein Blick in die Tabelle zeigt, dass lediglich die Performance bei dieser Bibliothek geringer ist, als bei *Dxf-Parser* oder *dxf2svg*.
+Allerdings handelt es sich hier um einen sehr geringen Unterschied von wenigen Millisekunden, wodurch dieser nicht weiter ins Gewicht fällt.
+
+Somit stehen schlussendlich die verwendeten Werkzeuge für die zu entwickelnde Anwendung für Gebäudevisualisierungen fest und es kann mit der Implementierungsphase begonnen werden.
 
 #BREAK, type=page#
 
