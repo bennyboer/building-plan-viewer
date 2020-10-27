@@ -30,7 +30,9 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+				"node_modules/dxf-parser/dist/dxf-parser.js"
+			]
           },
           "configurations": {
             "production": {

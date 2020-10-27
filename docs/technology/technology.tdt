@@ -69,18 +69,18 @@ Unsere Zielsetzung für dieses Kapitel ist es, die für unsere Zwecke bestmögli
 Als erster Schritt steht eine Internetrecherche auf dem Plan, welche zu einer Auflistung von Parserbibliotheken führen soll.
 Bei einer Suche über `npmjs.com` sind die folgenden Bibliotheken aufgetaucht:
 
-- **Dxf-Parser**: https://github.com/gdsestimating/dxf-parser
-- **dxf**: https://github.com/bjnortier/dxf
-- **dxftoobject**: https://github.com/douglasrolim/dxftoobject
-- **dxf2svg**: https://www.npmjs.com/package/dxf2svg
+- **Dxf-Parser** #CITE, 'DxfParserNpm'#
+- **dxf** #CITE, 'DxfNpm'#
+- **dxftoobject** #CITE, 'dxftoobjectNpm'#
+- **dxf2svg** #CITE, 'dxf2svgNpm'#
 
-Wir wollen diese nach *Performance (Ladegeschwindigkeit)*, *Lizenz*, *Beliebtheit auf `npmjs.com`*, *Aktualität* und der Güte der *Dokumentation* beurteilen.
+Wir wollen diese nach *Performance (Ladegeschwindigkeit)*, *Lizenz*, *Beliebtheit auf `npmjs.com`* (Wöchentliche Downloads #FOOTNOTE, "Jeweils abgerufen am 25.10.2020 um 15:30"#), *Aktualität* und der Güte der *Dokumentation* beurteilen.
 
 Zunächst wird die Performance gemessen, indem wir für jede Alternative dieselbe CAD-Datei lesen.
 Das Testprogramm, welches für jeden Messdurchgang durchgeführt wird, befindet sich im #REF, testapp, prefix=Codebeispiel#.
 
 #CODE, '
-public readFile(file: File): void {
+public static readFile(file: File): void {
 	const reader: FileReader = new FileReader();
 	reader.onload = async (e) => {
 		const dxfContentStr: string | ArrayBuffer = e.target.result;

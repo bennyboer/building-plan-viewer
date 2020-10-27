@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef, NgZone, OnDestroy, OnInit} from "@angular/core";
 import {BoxGeometry, Camera, Geometry, Material, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer} from "three";
 import * as DXF from "dxf";
-import {FileChangeEvent} from "@angular/compiler-cli/src/perform_watch";
 
 /**
  * Viewer component displaying the building plan, etc.
@@ -70,6 +69,10 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	}
 
 	public readFile(file: File): void {
+		// for (let i = 0; i < 5; i++) {
+		// 	PerformanceTest.readFile(file);
+		// }
+
 		const reader: FileReader = new FileReader();
 		reader.onload = (e) => {
 			const contents: string | ArrayBuffer = e.target.result;
