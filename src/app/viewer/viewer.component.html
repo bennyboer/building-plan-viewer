@@ -1,1 +1,16 @@
-<input type="file" (change)="readFile($event.target.files[0])" />
+<div class="controls-container">
+	<app-viewer-controls></app-viewer-controls>
+</div>
+
+<div *ngIf="showPlaceholder" class="placeholder">
+	<div>
+		<span>
+			Please select a CAD file to load
+		</span>
+	</div>
+	<div>
+		<button mat-stroked-button (click)="onLoad()">
+			Select...
+		</button>
+	</div>
+</div>

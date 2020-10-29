@@ -6,17 +6,29 @@ import {AppComponent} from "./app.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {MatButtonModule} from "@angular/material/button";
 import {ViewerComponent} from "./viewer/viewer.component";
+import {ControlsComponent} from "./viewer/controls/controls.component";
+import {MatIconModule} from "@angular/material/icon";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
+
+const materialModules = [
+	MatButtonModule,
+	MatIconModule,
+	MatTooltipModule,
+	MatSnackBarModule
+];
 
 @NgModule({
 	declarations: [
 		AppComponent,
-		ViewerComponent
+		ViewerComponent,
+		ControlsComponent
 	],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,
 		BrowserAnimationsModule,
-		MatButtonModule
+		...materialModules
 	],
 	providers: [],
 	bootstrap: [AppComponent]
