@@ -2,7 +2,7 @@ import {CanvasSourceReader} from "../canvas-source-reader";
 import {CanvasSource} from "../canvas-source";
 import {DxfCanvasSource} from "./dxf-canvas-source";
 import {FileUtil} from "../../../../util/file-util";
-import {Helper} from "dxf";
+import {Dxf, Helper} from "dxf";
 
 /**
  * Reader for canvas sources from DXF files.
@@ -18,13 +18,7 @@ export class DxfCanvasSourceReader implements CanvasSourceReader {
 
 		const helper: Helper = new Helper(contents);
 
-		console.log(helper.parsed);
-		console.log(helper.groups);
-		console.log(helper.toPolylines());
-
-		// TODO
-
-		return new DxfCanvasSource();
+		return new DxfCanvasSource(helper.parsed as Dxf);
 	}
 
 }
