@@ -75,13 +75,15 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
 	@Input("src")
 	set source(value: CanvasSource) {
 		this._source = value;
+
+		this.onUpdated();
 	}
 
 	/**
 	 * Called when the current source to display is updated.
 	 */
 	private onUpdated(): void {
-		// TODO Redraw the source
+		this._source.draw(this.scene);
 	}
 
 	/**
@@ -90,27 +92,29 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
 	public ngAfterViewInit(): void {
 		const bounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
 
-		this.camera = new PerspectiveCamera(
-			75,
-			bounds.width / bounds.height,
-			0.1,
-			1000
+		this.camera = new OrthographicCamera(
+			-bounds.width / 2,
+			bounds.width / 2,
+			bounds.height / 2,
+			-bounds.height / 2,
 		);
 
 		this.renderer.setSize(
 			this.element.nativeElement.clientWidth,
 			this.element.nativeElement.clientHeight
 		);
+		this.renderer.setClearColor(0xfffffff, 1);
 
 		this.ngRenderer.appendChild(this.element.nativeElement, this.renderer.domElement);
 
 		const geometry: Geometry = new BoxGeometry();
 		const material: Material = new MeshBasicMaterial({color: 0x00ff00});
 		const cube: Mesh = new Mesh(geometry, material);
+		cube.scale.multiplyScalar(100);
 
 		this.scene.add(cube);
 
-		this.camera.position.z = 5;
+		this.camera.position.z = 10;
 
 		const animate: () => void = () => {
 			window.requestAnimationFrame(animate);
@@ -121,7 +125,6 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
 			this.renderer.render(this.scene, this.camera);
 		};
 
-		// Run the animation outside angular to prevent change detection overhead
 		animate();
 	}
 
@@ -145,10 +148,10 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
 			this.camera.aspect = bounds.width / bounds.height;
 			this.camera.updateProjectionMatrix();
 		} else if (this.camera instanceof OrthographicCamera) {
-			this.camera.left = 0;
+			this.camera.left = -bounds.width / 2;
 			this.camera.right = bounds.width;
-			this.camera.top = 0;
-			this.camera.bottom = bounds.height;
+			this.camera.top = bounds.height / 2;
+			this.camera.bottom = -bounds.height / 2;
 			this.camera.updateProjectionMatrix();
 		}
 
