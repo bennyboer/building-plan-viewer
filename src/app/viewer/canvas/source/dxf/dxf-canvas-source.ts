@@ -1,8 +1,9 @@
 import {CanvasSource} from "../canvas-source";
-import {Scene} from "three";
+import {Box3, Object3D, Scene} from "three";
 import {Dxf, DxfEntity} from "dxf";
 import {EntityHandler} from "./handler/entity-handler";
 import {EntityHandlers} from "./handler/entity-handlers";
+import {Bounds} from "../util/bounds";
 
 /**
  * A canvas source read from DXF.
@@ -14,6 +15,15 @@ export class DxfCanvasSource implements CanvasSource {
 	 */
 	private readonly dxf: Dxf;
 
+	/**
+	 * Bounds of the drawn object.
+	 */
+	private bounds: Bounds = {
+		x: {min: 0, max: 0},
+		y: {min: 0, max: 0},
+		z: {min: 0, max: 0},
+	};
+
 	constructor(dxf: Dxf) {
 		this.dxf = dxf;
 	}
@@ -22,7 +32,9 @@ export class DxfCanvasSource implements CanvasSource {
 	 * Draw the source on the given scene.
 	 * @param scene to draw on
 	 */
-	public draw(scene: Scene): void {
+	public draw(scene: Scene): Bounds {
+		this.resetBounds();
+
 		for (const entity of this.dxf.entities) {
 			try {
 				this.drawEntity(entity, scene);
@@ -30,6 +42,8 @@ export class DxfCanvasSource implements CanvasSource {
 				console.warn(e.message);
 			}
 		}
+
+		return this.bounds;
 	}
 
 	/**
@@ -45,7 +59,62 @@ export class DxfCanvasSource implements CanvasSource {
 			throw new Error(`Entity type '${type}' is not supported`);
 		}
 
-		handler.process(entity, this.dxf, scene);
+		const object: Object3D = handler.process(entity, this.dxf);
+		scene.add(object);
+
+		this.updateBounds(object);
+	}
+
+	/**
+	 * Reset the bounds.
+	 */
+	private resetBounds(): void {
+		this.bounds = {
+			x: {min: null, max: null},
+			y: {min: null, max: null},
+			z: {min: null, max: null},
+		};
+	}
+
+	/**
+	 * Update the current bounds.
+	 * @param object of a drawn object
+	 */
+	private updateBounds(object: Object3D) {
+		const bounds: Box3 = new Box3().setFromObject(object);
+
+		if (!!bounds.min.x) {
+			if (!this.bounds.x.min || this.bounds.x.min > bounds.min.x) {
+				this.bounds.x.min = bounds.min.x;
+			}
+		}
+		if (!!bounds.max.x) {
+			if (!this.bounds.x.max || this.bounds.x.max > bounds.max.x) {
+				this.bounds.x.max = bounds.max.x;
+			}
+		}
+
+		if (!!bounds.min.y) {
+			if (!this.bounds.y.min || this.bounds.y.min > bounds.min.y) {
+				this.bounds.y.min = bounds.min.y;
+			}
+		}
+		if (!!bounds.max.y) {
+			if (!this.bounds.y.max || this.bounds.y.max > bounds.max.y) {
+				this.bounds.y.max = bounds.max.y;
+			}
+		}
+
+		if (!!bounds.min.z) {
+			if (!this.bounds.z.min || this.bounds.z.min > bounds.min.z) {
+				this.bounds.z.min = bounds.min.z;
+			}
+		}
+		if (!!bounds.max.z) {
+			if (!this.bounds.z.max || this.bounds.z.max > bounds.max.z) {
+				this.bounds.z.max = bounds.max.z;
+			}
+		}
 	}
 
 }

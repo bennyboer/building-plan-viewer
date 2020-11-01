@@ -1,27 +1,7 @@
-import {
-	AfterViewInit,
-	ChangeDetectionStrategy,
-	ChangeDetectorRef,
-	Component,
-	ElementRef,
-	HostListener,
-	Input,
-	OnDestroy,
-	Renderer2
-} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, Renderer2} from "@angular/core";
 import {CanvasSource} from "./source/canvas-source";
-import {
-	BoxGeometry,
-	Camera,
-	Geometry,
-	Material,
-	Mesh,
-	MeshBasicMaterial,
-	OrthographicCamera,
-	PerspectiveCamera,
-	Scene,
-	WebGLRenderer
-} from "three";
+import {Camera, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import {Bounds} from "./source/util/bounds";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -32,7 +12,7 @@ import {
 	styleUrls: ["canvas.component.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CanvasComponent implements AfterViewInit, OnDestroy {
+export class CanvasComponent implements OnDestroy {
 
 	/**
 	 * Source that should be displayed by the component.
@@ -53,6 +33,16 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
 	 * Current three.js Camera.
 	 */
 	private camera: Camera;
+
+	/**
+	 * The last drawing bounds.
+	 */
+	private lastBounds: Bounds;
+
+	/**
+	 * Whether the canvas is initialized.
+	 */
+	private initialized: boolean = false;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -83,49 +73,76 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
 	 * Called when the current source to display is updated.
 	 */
 	private onUpdated(): void {
-		this._source.draw(this.scene);
+		const bounds: Bounds = this._source.draw(this.scene);
+
+		this.updateViewport(bounds);
 	}
 
 	/**
-	 * Called after the component view is initialized.
+	 * Initialize the rendering.
 	 */
-	public ngAfterViewInit(): void {
-		const bounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
-
+	private initialize(x: number, y: number, width: number, height: number): void {
 		this.camera = new OrthographicCamera(
-			-bounds.width / 2,
-			bounds.width / 2,
-			bounds.height / 2,
-			-bounds.height / 2,
+			-width / 2,
+			width / 2,
+			height / 2,
+			-height / 2,
 		);
+		this.camera.position.z = 10;
 
+		const elementBounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
 		this.renderer.setSize(
-			this.element.nativeElement.clientWidth,
-			this.element.nativeElement.clientHeight
+			elementBounds.width,
+			elementBounds.height,
 		);
 		this.renderer.setClearColor(0xfffffff, 1);
 
 		this.ngRenderer.appendChild(this.element.nativeElement, this.renderer.domElement);
+	}
 
-		const geometry: Geometry = new BoxGeometry();
-		const material: Material = new MeshBasicMaterial({color: 0x00ff00});
-		const cube: Mesh = new Mesh(geometry, material);
-		cube.scale.multiplyScalar(100);
+	/**
+	 * Update the current viewport.
+	 */
+	private updateViewport(bounds: Bounds) {
+		const elementBounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
+		const aspectRatio: number = elementBounds.width / elementBounds.height;
 
-		this.scene.add(cube);
+		// Build viewport
+		const x: number = bounds.x.min;
+		const y: number = bounds.y.min;
 
-		this.camera.position.z = 10;
+		let width: number = bounds.x.max - bounds.x.min;
+		let height: number = bounds.y.max - bounds.y.min;
 
-		const animate: () => void = () => {
-			window.requestAnimationFrame(animate);
+		// Transform viewport size with preferred aspect ratio
+		const currentAspectRatio: number = width / height;
+		if (currentAspectRatio < aspectRatio) {
+			width = height * aspectRatio;
+		} else if (currentAspectRatio > aspectRatio) {
+			height = width / aspectRatio;
+		}
 
-			cube.rotation.x += 0.01;
-			cube.rotation.y += 0.01;
+		if (!this.initialized) {
+			this.initialized = true;
+			this.initialize(x, y, width, height);
+		}
 
-			this.renderer.render(this.scene, this.camera);
-		};
+		// Update camera projection
+		if (this.camera instanceof PerspectiveCamera) {
+			this.camera.aspect = aspectRatio;
+			this.camera.updateProjectionMatrix();
+		} else if (this.camera instanceof OrthographicCamera) {
+			this.camera.left = -width / 2;
+			this.camera.right = width / 2;
+			this.camera.top = height / 2;
+			this.camera.bottom = -height / 2;
+			this.camera.updateProjectionMatrix();
 
-		animate();
+			this.camera.position.x = x + width / 2;
+			this.camera.position.y = y + height / 2;
+		}
+
+		this.renderer.render(this.scene, this.camera);
 	}
 
 	/**
@@ -143,16 +160,8 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
 	public onWindowResize(event: Event): void {
 		const bounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
 
-		// Update camera projection
-		if (this.camera instanceof PerspectiveCamera) {
-			this.camera.aspect = bounds.width / bounds.height;
-			this.camera.updateProjectionMatrix();
-		} else if (this.camera instanceof OrthographicCamera) {
-			this.camera.left = -bounds.width / 2;
-			this.camera.right = bounds.width;
-			this.camera.top = bounds.height / 2;
-			this.camera.bottom = -bounds.height / 2;
-			this.camera.updateProjectionMatrix();
+		if (!!this.lastBounds) {
+			this.updateViewport(this.lastBounds);
 		}
 
 		// Update renderers canvas size

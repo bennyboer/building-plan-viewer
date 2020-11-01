@@ -1,5 +1,5 @@
 import {EntityHandler} from "./entity-handler";
-import {Scene} from "three";
+import {Object3D} from "three";
 import {Dxf, DxfEntity, DxfLayer} from "../dxf";
 
 /**
@@ -16,9 +16,8 @@ export abstract class AbstractEntityHandler implements EntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
-	 * @param scene to draw on
 	 */
-	abstract process(entity: DxfEntity, dxf: Dxf, scene: Scene): void;
+	abstract process(entity: DxfEntity, dxf: Dxf): Object3D;
 
 	/**
 	 * Retrieve a color from the passed entity and DXF.

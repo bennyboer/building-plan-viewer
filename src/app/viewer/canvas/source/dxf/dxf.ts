@@ -126,7 +126,7 @@ export interface DxfHeader {
 /**
  * LWPolyline (lightweight polyline) entity.
  */
-export interface DxfLWPolyline extends DxfEntity {
+export interface DxfLWPolylineEntity extends DxfEntity {
 
 	/**
 	 * Vertices of the entity.

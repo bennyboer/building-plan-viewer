@@ -1,5 +1,6 @@
 import {EntityHandler} from "./entity-handler";
 import {CircleHandler} from "./circle-handler";
+import {LWPolylineHandler} from "./lw-polyline-handler";
 
 /**
  * Collection of available entity handlers.
@@ -11,6 +12,7 @@ export class EntityHandlers {
 	 */
 	private static readonly HANDLERS: Map<string, EntityHandler> = new Map<string, EntityHandler>([
 		[CircleHandler.TYPE, new CircleHandler()],
+		[LWPolylineHandler.TYPE, new LWPolylineHandler()],
 	]);
 
 	/**

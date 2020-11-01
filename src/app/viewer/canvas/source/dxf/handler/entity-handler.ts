@@ -1,4 +1,4 @@
-import {Scene} from "three";
+import {Object3D} from "three";
 import {Dxf, DxfEntity} from "../dxf";
 
 /**
@@ -10,8 +10,7 @@ export interface EntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
-	 * @param scene to draw on
 	 */
-	process(entity: DxfEntity, dxf: Dxf, scene: Scene): void;
+	process(entity: DxfEntity, dxf: Dxf): Object3D;
 
 }
