@@ -10,6 +10,7 @@ import {ControlsComponent} from "./viewer/controls/controls.component";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
+import {CanvasComponent} from "./viewer/canvas/canvas.component";
 
 const materialModules = [
 	MatButtonModule,
@@ -22,7 +23,8 @@ const materialModules = [
 	declarations: [
 		AppComponent,
 		ViewerComponent,
-		ControlsComponent
+		ControlsComponent,
+		CanvasComponent
 	],
 	imports: [
 		BrowserModule,

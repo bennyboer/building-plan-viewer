@@ -9,12 +9,13 @@ import {
 	OnInit,
 	ViewChild
 } from "@angular/core";
-import {BoxGeometry, Camera, Geometry, Material, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer} from "three";
-import {Helper} from "dxf";
 import {ControlsComponent} from "./controls/controls.component";
 import {Subscription} from "rxjs";
 import {FileUtil} from "../util/file-util";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {CanvasSourceReaders} from "./canvas/source/canvas-source-readers";
+import {CanvasSourceReader} from "./canvas/source/canvas-source-reader";
+import {CanvasSource} from "./canvas/source/canvas-source";
 
 /**
  * Viewer component displaying the building plan, etc.
@@ -62,6 +63,11 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	 * Currently shown placeholder message.
 	 */
 	public placeHolderMessage: string = ViewerComponent.PLACEHOLDER_MESSAGE;
+
+	/**
+	 * Current canvas source to display in the viewer.
+	 */
+	public canvasSource: CanvasSource;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -120,51 +126,13 @@ export class ViewerComponent implements OnInit, OnDestroy {
 		this.showPlaceholder = false;
 		this.cd.markForCheck();
 
-		const contents: string | ArrayBuffer = await FileUtil.readFile(file);
+		const reader: CanvasSourceReader = CanvasSourceReaders.getReader(file);
+		if (!reader) {
+			throw new Error(`File with extension '${FileUtil.getFileEnding(file)}' is unsupported`);
+		}
 
-		const helper: Helper = new Helper(contents);
-		console.log(helper.parsed);
-		console.log(helper.groups);
-		console.log(helper.toPolylines());
-
-		const scene: Scene = new Scene();
-		const camera: Camera = new PerspectiveCamera(
-			75,
-			500 / 300, // TODO Bind to component element size
-			0.1,
-			1000
-		);
-
-		const renderer: WebGLRenderer = new WebGLRenderer();
-
-		renderer.setSize(
-			this.element.nativeElement.clientWidth,
-			this.element.nativeElement.clientHeight
-		); // TODO Bind size to the components element size
-
-		this.element.nativeElement.appendChild(renderer.domElement);
-
-		const geometry: Geometry = new BoxGeometry();
-		const material: Material = new MeshBasicMaterial({color: 0x00ff00});
-		const cube: Mesh = new Mesh(geometry, material);
-
-		scene.add(cube);
-
-		camera.position.z = 5;
-
-		const animate: () => void = () => {
-			window.requestAnimationFrame(animate);
-
-			cube.rotation.x += 0.01;
-			cube.rotation.y += 0.01;
-
-			renderer.render(scene, camera);
-		};
-
-		// Run the animation outside angular to prevent change detection overhead
-		this.zone.runOutsideAngular(() => {
-			animate();
-		});
+		this.canvasSource = await reader.read(file);
+		this.cd.markForCheck();
 	}
 
 	/**

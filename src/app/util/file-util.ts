@@ -48,6 +48,19 @@ export class FileUtil {
 	}
 
 	/**
+	 * Get the file ending of the passed file.
+	 * @param file to get file ending for
+	 */
+	public static getFileEnding(file: File): string | null {
+		const parts: string[] = file.name.split(".");
+		if (parts.length == 1 && !file.name.startsWith(".")) {
+			return null;
+		}
+
+		return parts[parts.length - 1];
+	}
+
+	/**
 	 * Create a dummy file input element in DOM and return a reference to it.
 	 */
 	private static createDummyFileInput(): HTMLInputElement {
