@@ -25,6 +25,11 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	private readonly _onExportSubject: Subject<void> = new Subject<void>();
 
 	/**
+	 * Subject emitting events when the viewport reset button has been clicked.
+	 */
+	private readonly _onViewportResetSubject: Subject<void> = new Subject<void>();
+
+	/**
 	 * Subscription to theme changes.
 	 */
 	private themeChangeSub: Subscription;
@@ -45,6 +50,7 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	public ngOnDestroy(): void {
 		this._onLoadSubject.complete();
 		this._onExportSubject.complete();
+		this._onViewportResetSubject.complete();
 
 		this.themeChangeSub.unsubscribe();
 	}
@@ -74,6 +80,13 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	}
 
 	/**
+	 * Called when the viewport reset button has been clicked.
+	 */
+	public onViewportResetClicked(): void {
+		this._onViewportResetSubject.next();
+	}
+
+	/**
 	 * Called on theme change.
 	 * @param event which occurred
 	 */
@@ -93,6 +106,13 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	 */
 	get onExport(): Observable<void> {
 		return this._onExportSubject.asObservable();
+	}
+
+	/**
+	 * Get an observable of events when the viewport reset button has been clicked.
+	 */
+	get onViewportReset(): Observable<void> {
+		return this._onViewportResetSubject.asObservable();
 	}
 
 }

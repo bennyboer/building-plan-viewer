@@ -57,6 +57,11 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	private exportSubscription: Subscription;
 
 	/**
+	 * Subscription to viewport reset events.
+	 */
+	private viewportResetSubscription: Subscription;
+
+	/**
 	 * Whether the placeholder should be shown.
 	 */
 	public showPlaceholder: boolean = true;
@@ -120,6 +125,7 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	 */
 	private initializeControlBindings() {
 		this.loadSubscription = this.controls.onLoad.subscribe(() => this.onLoad());
+		this.viewportResetSubscription = this.controls.onViewportReset.subscribe(() => this.onResetViewport());
 	}
 
 	/**
@@ -128,6 +134,7 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	private cleanupControlBindings() {
 		this.loadSubscription.unsubscribe();
 		this.exportSubscription.unsubscribe();
+		this.viewportResetSubscription.unsubscribe();
 	}
 
 	/**
@@ -140,6 +147,13 @@ export class ViewerComponent implements OnInit, OnDestroy {
 		} else {
 			this.snackBar.open(`The viewer currently supports only DXF CAD files with the file ending '*.dxf'`);
 		}
+	}
+
+	/**
+	 * Called when the viewport reset event arrives from the controls component.
+	 */
+	public async onResetViewport(): Promise<void> {
+		this.canvasComponent.resetViewport();
 	}
 
 	/**

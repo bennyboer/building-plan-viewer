@@ -17,6 +17,7 @@ import {Observable, Subject, Subscription} from "rxjs";
 import {DxfGlobals} from "./source/dxf/util/dxf-globals";
 import {DeviceUtil} from "../../util/device-util";
 import {DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, UP_ARROW} from "@angular/cdk/keycodes";
+import {Point} from "@angular/cdk/drag-drop";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -45,13 +46,18 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Factor with which the current speed will be slowed
 	 * each second when no arrow key in one direction is active.
 	 */
-	private static readonly ARROW_KEY_NAVIGATION_SLOW_FACTOR: number = 5.0;
+	private static readonly ARROW_KEY_NAVIGATION_SLOW_FACTOR: number = 7.0;
 
 	/**
 	 * Maximum speed of the arrow key navigation given as factor of the current
 	 * scene width or height.
 	 */
 	private static readonly ARROW_KEY_NAVIGATION_MAX_SPEED_FACTOR: number = 0.8;
+
+	/**
+	 * Minimum speed factor (relative to scene width or height) allowed in the arrow key navigation.
+	 */
+	private static readonly ARROW_KEY_NAVIGATION_MIN_SPEED_FACTOR: number = 0.01;
 
 	/**
 	 * Event emitter emitting events when a file has started or finished rendering/loading.
@@ -117,6 +123,21 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private windowKeyUpListener: (event: KeyboardEvent) => void;
 
 	/**
+	 * Mouse down listener on the canvas component element.
+	 */
+	private mouseDownListener: (event: MouseEvent) => void;
+
+	/**
+	 * Mouse move listener on the canvas component element.
+	 */
+	private mouseMoveListener: (event: MouseEvent) => void;
+
+	/**
+	 * Mouse up listener on the canvas component element.
+	 */
+	private mouseUpListener: (event: MouseEvent) => void;
+
+	/**
 	 * Whether arrow key navigation is currently in progress.
 	 */
 	private isArrowKeyNavigationInProgress: boolean = false;
@@ -144,6 +165,21 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Timestamp of the last key navigation step.
 	 */
 	private lastKeyNavigationTimestamp: number = -1;
+
+	/**
+	 * Whether panning of the scene is in progress.
+	 */
+	private isPanInProgress: boolean = false;
+
+	/**
+	 * Mouse position of the panning start.
+	 */
+	private panStartMousePosition: Point;
+
+	/**
+	 * Position of the scenes camera at panning start.
+	 */
+	private panStartSceneCameraPosition: Point;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -301,6 +337,15 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.updateCameraProjection(viewport, reset);
 
 		this.repaint();
+	}
+
+	/**
+	 * Reset the viewport to the initial position and size.
+	 */
+	public resetViewport(): void {
+		if (!!this.lastBounds) {
+			this.updateViewport(this.lastBounds, true);
+		}
 	}
 
 	/**
@@ -480,9 +525,16 @@ export class CanvasComponent implements OnDestroy, OnInit {
 				break;
 		}
 
-		if (isDown) {
+		if (isDown && this.isKeyboardNavigationAllowed()) {
 			this.startArrowKeyNavigation();
 		}
+	}
+
+	/**
+	 * Check whether keyboard navigation is currently allowed.
+	 */
+	private isKeyboardNavigationAllowed(): boolean {
+		return !this.isPanInProgress;
 	}
 
 	/**
@@ -520,6 +572,10 @@ export class CanvasComponent implements OnDestroy, OnInit {
 					} else {
 						currentYSpeed = Math.min(0, currentYSpeed - currentYSpeed * CanvasComponent.ARROW_KEY_NAVIGATION_SLOW_FACTOR * diff / 1000);
 					}
+
+					if (Math.abs(currentYSpeed) < CanvasComponent.ARROW_KEY_NAVIGATION_MIN_SPEED_FACTOR * this.currentViewport.height) {
+						currentYSpeed = 0;
+					}
 				}
 
 				if (this.pressedKeyRegistry.left) {
@@ -532,6 +588,10 @@ export class CanvasComponent implements OnDestroy, OnInit {
 						currentXSpeed = Math.max(0, currentXSpeed - currentXSpeed * CanvasComponent.ARROW_KEY_NAVIGATION_SLOW_FACTOR * diff / 1000);
 					} else {
 						currentXSpeed = Math.min(0, currentXSpeed - currentXSpeed * CanvasComponent.ARROW_KEY_NAVIGATION_SLOW_FACTOR * diff / 1000);
+					}
+
+					if (Math.abs(currentXSpeed) < CanvasComponent.ARROW_KEY_NAVIGATION_MIN_SPEED_FACTOR * this.currentViewport.width) {
+						currentXSpeed = 0;
 					}
 				}
 
@@ -573,14 +633,76 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Register user navigation using mouse input.
 	 */
 	private registerUserNavigationUsingMouse(): void {
-		// TODO
+		this.mouseDownListener = event => this.onMouseDown(event);
+		this.mouseMoveListener = event => this.onMouseMove(event);
+		this.mouseUpListener = event => this.onMouseUp(event);
+
+		this.element.nativeElement.addEventListener("mousedown", this.mouseDownListener);
+		this.element.nativeElement.addEventListener("mousemove", this.mouseMoveListener);
+		this.element.nativeElement.addEventListener("mouseup", this.mouseUpListener);
 	}
 
 	/**
 	 * Unregister user navigation using mouse input.
 	 */
 	private unregisterUserNavigationWithMouse(): void {
-		// TODO
+		this.element.nativeElement.removeEventListener("mousedown", this.mouseDownListener);
+		this.element.nativeElement.removeEventListener("mousemove", this.mouseMoveListener);
+		this.element.nativeElement.removeEventListener("mouseup", this.mouseUpListener);
+	}
+
+	/**
+	 * Called on mouse down on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onMouseDown(event: MouseEvent): void {
+		const isLeftButton: boolean = event.button === 0;
+
+		if (isLeftButton && this.isPanningAllowed()) {
+			this.isPanInProgress = true;
+
+			this.panStartMousePosition = {
+				x: event.clientX,
+				y: event.clientY
+			};
+			this.panStartSceneCameraPosition = {
+				x: this.camera.position.x,
+				y: this.camera.position.y
+			};
+		}
+	}
+
+	/**
+	 * Called on mouse move event on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onMouseMove(event: MouseEvent): void {
+		if (this.isPanInProgress && this.isPanningAllowed()) {
+			const elementBounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
+
+			const xDiffFactor: number = (event.clientX - this.panStartMousePosition.x) / elementBounds.width;
+			const yDiffFactor: number = (event.clientY - this.panStartMousePosition.y) / elementBounds.height;
+
+			this.camera.position.x = this.panStartSceneCameraPosition.x - xDiffFactor * this.currentViewport.width;
+			this.camera.position.y = this.panStartSceneCameraPosition.y + yDiffFactor * this.currentViewport.height;
+
+			this.repaint();
+		}
+	}
+
+	/**
+	 * Check whether panning is currently allowed.
+	 */
+	private isPanningAllowed(): boolean {
+		return !this.isArrowKeyNavigationInProgress;
+	}
+
+	/**
+	 * Called on mouse up on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onMouseUp(event: MouseEvent): void {
+		this.isPanInProgress = false;
 	}
 
 	/**
