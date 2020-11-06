@@ -11,12 +11,19 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {CanvasComponent} from "./viewer/canvas/canvas.component";
+import {MatDialogModule} from "@angular/material/dialog";
+import {LoadingDialogComponent} from "./viewer/dialog/loading/component/loading-dialog.component";
+import {LoadingDialogService} from "./viewer/dialog/loading/service/loading-dialog.service";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
 
-const materialModules = [
+const materialModules: any[] = [
 	MatButtonModule,
 	MatIconModule,
 	MatTooltipModule,
-	MatSnackBarModule
+	MatSnackBarModule,
+	MatDialogModule,
+	MatProgressBarModule
 ];
 
 @NgModule({
@@ -24,7 +31,8 @@ const materialModules = [
 		AppComponent,
 		ViewerComponent,
 		ControlsComponent,
-		CanvasComponent
+		CanvasComponent,
+		LoadingDialogComponent
 	],
 	imports: [
 		BrowserModule,
@@ -32,7 +40,9 @@ const materialModules = [
 		BrowserAnimationsModule,
 		...materialModules
 	],
-	providers: [],
+	providers: [
+		LoadingDialogService
+	],
 	bootstrap: [AppComponent]
 })
 export class AppModule {

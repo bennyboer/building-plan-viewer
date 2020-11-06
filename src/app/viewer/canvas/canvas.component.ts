@@ -1,7 +1,18 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, Renderer2} from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	EventEmitter,
+	HostListener,
+	Input,
+	OnDestroy,
+	Output,
+	Renderer2
+} from "@angular/core";
 import {CanvasSource} from "./source/canvas-source";
 import {Camera, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer} from "three";
-import {Bounds} from "./source/util/bounds";
+import {Bounds2D, Bounds3D, BoundsUtil} from "./source/util/bounds";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -13,6 +24,17 @@ import {Bounds} from "./source/util/bounds";
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CanvasComponent implements OnDestroy {
+
+	/**
+	 * Default zoom setting.
+	 */
+	private static readonly DEFAULT_ZOOM: number = 0.9;
+
+	/**
+	 * Event emitter emitting events when a file has been rendered/loaded.
+	 */
+	@Output()
+	private readonly load: EventEmitter<void> = new EventEmitter<void>();
 
 	/**
 	 * Source that should be displayed by the component.
@@ -27,7 +49,9 @@ export class CanvasComponent implements OnDestroy {
 	/**
 	 * Current three.js WebGL renderer.
 	 */
-	private readonly renderer: WebGLRenderer = new WebGLRenderer();
+	private readonly renderer: WebGLRenderer = new WebGLRenderer({
+		antialias: true,
+	});
 
 	/**
 	 * Current three.js Camera.
@@ -37,17 +61,22 @@ export class CanvasComponent implements OnDestroy {
 	/**
 	 * The last drawing bounds.
 	 */
-	private lastBounds: Bounds;
+	private lastBounds: Bounds3D;
 
 	/**
 	 * Whether the canvas is initialized.
 	 */
 	private initialized: boolean = false;
 
+	/**
+	 * Whether a repaint is already requested.
+	 */
+	private repaintRequested: boolean = false;
+
 	constructor(
 		private readonly cd: ChangeDetectorRef,
 		private readonly element: ElementRef,
-		private readonly ngRenderer: Renderer2,
+		private readonly ngRenderer: Renderer2
 	) {
 	}
 
@@ -70,27 +99,43 @@ export class CanvasComponent implements OnDestroy {
 	}
 
 	/**
+	 * Clear the current scene from any objects previously drawn.
+	 */
+	private clearScene(): void {
+		if (this.initialized) {
+			this.scene.remove.apply(this.scene, this.scene.children);
+		}
+	}
+
+	/**
 	 * Called when the current source to display is updated.
 	 */
-	private onUpdated(): void {
-		const bounds: Bounds = this._source.draw(this.scene);
+	private async onUpdated(): Promise<void> {
+		this.clearScene();
 
-		this.updateViewport(bounds);
+		const bounds: Bounds3D = this._source.draw(this.scene);
+
+		this.updateViewport(bounds, true);
+
+		this.load.emit();
 	}
 
 	/**
 	 * Initialize the rendering.
+	 * @param viewport to use for the canvas
 	 */
-	private initialize(x: number, y: number, width: number, height: number): void {
-		this.camera = new OrthographicCamera(
-			-width / 2,
-			width / 2,
-			height / 2,
-			-height / 2,
-		);
-		this.camera.position.z = 10;
-
+	private initialize(viewport: Bounds2D): void {
 		const elementBounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
+
+		const cam: OrthographicCamera = new OrthographicCamera(
+			-viewport.width / 2,
+			viewport.height / 2,
+			viewport.height / 2,
+			-viewport.width / 2,
+		);
+		cam.position.z = 1;
+		this.camera = cam;
+
 		this.renderer.setSize(
 			elementBounds.width,
 			elementBounds.height,
@@ -101,48 +146,96 @@ export class CanvasComponent implements OnDestroy {
 	}
 
 	/**
-	 * Update the current viewport.
+	 * Build the viewport of the canvas.
+	 * @param bounds original (full) bounds of the scene
 	 */
-	private updateViewport(bounds: Bounds) {
+	private buildViewport(bounds: Bounds3D): Bounds2D {
+		const viewport: Bounds2D = BoundsUtil.to2DBounds(bounds);
+
+		// Find aspect ratio of the canvas element
 		const elementBounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
 		const aspectRatio: number = elementBounds.width / elementBounds.height;
 
-		// Build viewport
-		const x: number = bounds.x.min;
-		const y: number = bounds.y.min;
-
-		let width: number = bounds.x.max - bounds.x.min;
-		let height: number = bounds.y.max - bounds.y.min;
-
 		// Transform viewport size with preferred aspect ratio
-		const currentAspectRatio: number = width / height;
+		const currentAspectRatio: number = viewport.width / viewport.height;
 		if (currentAspectRatio < aspectRatio) {
-			width = height * aspectRatio;
+			viewport.width = viewport.height * aspectRatio;
 		} else if (currentAspectRatio > aspectRatio) {
-			height = width / aspectRatio;
+			viewport.height = viewport.width / aspectRatio;
 		}
+
+		return viewport;
+	}
+
+	/**
+	 * Update the current viewport.
+	 * @param bounds original (full) bounds of the scene
+	 * @param reset whether to reset the viewport to the initial setup
+	 */
+	private updateViewport(bounds: Bounds3D, reset: boolean) {
+		const viewport: Bounds2D = this.buildViewport(bounds);
 
 		if (!this.initialized) {
 			this.initialized = true;
-			this.initialize(x, y, width, height);
+			this.initialize(viewport);
 		}
 
-		// Update camera projection
+		this.updateCameraProjection(viewport, reset);
+
+		this.repaint();
+	}
+
+	/**
+	 * Repaint the canvas.
+	 */
+	private async repaint(): Promise<void> {
+		if (!this.repaintRequested) {
+			this.repaintRequested = true;
+
+			return new Promise<void>(
+				resolve => window.requestAnimationFrame(() => {
+					this.renderer.render(this.scene, this.camera);
+					this.repaintRequested = false;
+
+					resolve();
+				})
+			);
+		}
+	}
+
+	/**
+	 * Update the current cameras projection.
+	 * @param viewport of the scene
+	 * @param reset whether to initialize the camera to the initial position, zoom, etc.
+	 */
+	private updateCameraProjection(viewport: Bounds2D, reset: boolean): void {
+		const elementBounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
+
 		if (this.camera instanceof PerspectiveCamera) {
-			this.camera.aspect = aspectRatio;
+			this.camera.aspect = elementBounds.width / elementBounds.height;
+
+			if (reset) {
+				this.camera.position.z = 1;
+				this.camera.position.x = 0;
+				this.camera.position.y = 0;
+			}
+
 			this.camera.updateProjectionMatrix();
 		} else if (this.camera instanceof OrthographicCamera) {
-			this.camera.left = -width / 2;
-			this.camera.right = width / 2;
-			this.camera.top = height / 2;
-			this.camera.bottom = -height / 2;
+			this.camera.left = -viewport.width / 2;
+			this.camera.right = viewport.width / 2;
+			this.camera.top = viewport.height / 2;
+			this.camera.bottom = -viewport.height / 2;
+
+			if (reset) {
+				this.camera.position.z = 1;
+				this.camera.position.x = viewport.left + viewport.width / 2;
+				this.camera.position.y = viewport.top + viewport.height / 2;
+				this.camera.zoom = CanvasComponent.DEFAULT_ZOOM;
+			}
+
 			this.camera.updateProjectionMatrix();
-
-			this.camera.position.x = x + width / 2;
-			this.camera.position.y = y + height / 2;
 		}
-
-		this.renderer.render(this.scene, this.camera);
 	}
 
 	/**
@@ -161,7 +254,7 @@ export class CanvasComponent implements OnDestroy {
 		const bounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
 
 		if (!!this.lastBounds) {
-			this.updateViewport(this.lastBounds);
+			this.updateViewport(this.lastBounds, false);
 		}
 
 		// Update renderers canvas size

@@ -3,7 +3,7 @@ import {Box3, Object3D, Scene} from "three";
 import {Dxf, DxfEntity} from "dxf";
 import {EntityHandler} from "./handler/entity-handler";
 import {EntityHandlers} from "./handler/entity-handlers";
-import {Bounds} from "../util/bounds";
+import {Bounds3D} from "../util/bounds";
 
 /**
  * A canvas source read from DXF.
@@ -18,7 +18,7 @@ export class DxfCanvasSource implements CanvasSource {
 	/**
 	 * Bounds of the drawn object.
 	 */
-	private bounds: Bounds = {
+	private bounds: Bounds3D = {
 		x: {min: 0, max: 0},
 		y: {min: 0, max: 0},
 		z: {min: 0, max: 0},
@@ -32,7 +32,7 @@ export class DxfCanvasSource implements CanvasSource {
 	 * Draw the source on the given scene.
 	 * @param scene to draw on
 	 */
-	public draw(scene: Scene): Bounds {
+	public draw(scene: Scene): Bounds3D {
 		this.resetBounds();
 
 		for (const entity of this.dxf.entities) {
@@ -89,7 +89,7 @@ export class DxfCanvasSource implements CanvasSource {
 			}
 		}
 		if (!!bounds.max.x) {
-			if (!this.bounds.x.max || this.bounds.x.max > bounds.max.x) {
+			if (!this.bounds.x.max || this.bounds.x.max < bounds.max.x) {
 				this.bounds.x.max = bounds.max.x;
 			}
 		}
@@ -100,7 +100,7 @@ export class DxfCanvasSource implements CanvasSource {
 			}
 		}
 		if (!!bounds.max.y) {
-			if (!this.bounds.y.max || this.bounds.y.max > bounds.max.y) {
+			if (!this.bounds.y.max || this.bounds.y.max < bounds.max.y) {
 				this.bounds.y.max = bounds.max.y;
 			}
 		}
@@ -111,7 +111,7 @@ export class DxfCanvasSource implements CanvasSource {
 			}
 		}
 		if (!!bounds.max.z) {
-			if (!this.bounds.z.max || this.bounds.z.max > bounds.max.z) {
+			if (!this.bounds.z.max || this.bounds.z.max < bounds.max.z) {
 				this.bounds.z.max = bounds.max.z;
 			}
 		}

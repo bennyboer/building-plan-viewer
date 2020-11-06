@@ -16,6 +16,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {CanvasSourceReaders} from "./canvas/source/canvas-source-readers";
 import {CanvasSourceReader} from "./canvas/source/canvas-source-reader";
 import {CanvasSource} from "./canvas/source/canvas-source";
+import {LoadingDialogService} from "./dialog/loading/service/loading-dialog.service";
+import {CanvasComponent} from "./canvas/canvas.component";
 
 /**
  * Viewer component displaying the building plan, etc.
@@ -69,11 +71,18 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	 */
 	public canvasSource: CanvasSource;
 
+	/**
+	 * Canvas component of the viewer.
+	 */
+	@ViewChild(CanvasComponent)
+	public canvasComponent: CanvasComponent;
+
 	constructor(
 		private readonly cd: ChangeDetectorRef,
 		private readonly element: ElementRef,
 		private readonly zone: NgZone,
-		private readonly snackBar: MatSnackBar
+		private readonly snackBar: MatSnackBar,
+		private readonly loadingDialogService: LoadingDialogService
 	) {
 	}
 
@@ -105,7 +114,7 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	public async onLoad(): Promise<void> {
 		const file: File = await ViewerComponent.openFileChooser();
 		if (file.name.endsWith(".dxf")) {
-			await this.showCADFile(file);
+			this.showCADFile(file);
 		} else {
 			this.snackBar.open(`The viewer currently supports only DXF CAD files with the file ending '*.dxf'`);
 		}
@@ -131,8 +140,17 @@ export class ViewerComponent implements OnInit, OnDestroy {
 			throw new Error(`File with extension '${FileUtil.getFileEnding(file)}' is unsupported`);
 		}
 
+		this.loadingDialogService.open({message: "Loading file..."});
+
 		this.canvasSource = await reader.read(file);
-		this.cd.markForCheck();
+		this.canvasComponent.source = this.canvasSource;
+	}
+
+	/**
+	 * Called when the canvas loading has finished (Rendering of a CAD file is done).
+	 */
+	public onCanvasLoaded(): void {
+		this.loadingDialogService.close();
 	}
 
 	/**

@@ -1,0 +1,9 @@
+<div mat-dialog-content class="content">
+	<mat-progress-bar
+		[mode]="isDeterminate ? 'determinate' : 'indeterminate'"
+		[value]="progress">
+	</mat-progress-bar>
+
+	<span class="message">{{ message }}</span>
+</div>
+
