@@ -124,6 +124,28 @@ export interface DxfHeader {
 }
 
 /**
+ * Polyline entity.
+ */
+export interface DxfPolylineEntity extends DxfEntity {
+
+	/**
+	 * Vertices of the entity.
+	 */
+	vertices: DxfPosition[];
+
+	/**
+	 * Whether the polyline is closed.
+	 */
+	closed: boolean;
+
+	/**
+	 * Thickness of the line.
+	 */
+	thickness?: number;
+
+}
+
+/**
  * LWPolyline (lightweight polyline) entity.
  */
 export interface DxfLWPolylineEntity extends DxfEntity {
@@ -137,6 +159,11 @@ export interface DxfLWPolylineEntity extends DxfEntity {
 	 * Whether the line is closed.
 	 */
 	closed: boolean;
+
+	/**
+	 * Thickness of the line.
+	 */
+	thickness?: number;
 
 }
 
@@ -174,6 +201,16 @@ export interface DxfMTextEntity extends DxfEntity, DxfPosition {
 	 * Attachment point of the text.
 	 */
 	attachmentPoint: number;
+
+	/**
+	 * Rotation around X-Axis.
+	 */
+	xAxisX?: number;
+
+	/**
+	 * Rotation around Y-Axis.
+	 */
+	xAxisY?: number;
 
 }
 
@@ -214,6 +251,11 @@ export interface DxfArcEntity extends DxfEntity, DxfPosition {
 	 */
 	lineTypeName: string;
 
+	/**
+	 * Thickness of the arc line.
+	 */
+	thickness?: number;
+
 }
 
 /**
@@ -231,6 +273,11 @@ export interface DxfLineEntity extends DxfEntity {
 	 */
 	end: DxfPosition;
 
+	/**
+	 * Thickness of the line.
+	 */
+	thickness?: number;
+
 }
 
 /**
@@ -242,23 +289,6 @@ export interface DxfInsertEntity extends DxfEntity, DxfPosition {
 	 * Name of the block the entity belongs to.
 	 */
 	block: string;
-
-}
-
-/**
- * Entity of the DXF object.
- */
-export interface DxfEntity {
-
-	/**
-	 * Layer on which the entity is on.
-	 */
-	layer: string;
-
-	/**
-	 * Type of the entity.
-	 */
-	type: string;
 
 }
 

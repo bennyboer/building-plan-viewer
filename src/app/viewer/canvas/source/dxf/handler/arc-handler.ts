@@ -30,7 +30,7 @@ export class ArcHandler extends AbstractEntityHandler {
 		);
 
 		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(arc.getPoints(32));
-		const material: Material = new LineBasicMaterial({color: this.retrieveColor(entity, dxf)});
+		const material: Material = new LineBasicMaterial({linewidth: e.thickness ?? 1, color: this.retrieveColor(entity, dxf)});
 
 		const result: Line = new Line(geometry, material);
 

@@ -2,6 +2,8 @@ import {EntityHandler} from "./entity-handler";
 import {CircleHandler} from "./circle-handler";
 import {LWPolylineHandler} from "./lw-polyline-handler";
 import {ArcHandler} from "./arc-handler";
+import {LineHandler} from "./line-handler";
+import {MTextHandler} from "./mtext-handler";
 
 /**
  * Collection of available entity handlers.
@@ -15,6 +17,8 @@ export class EntityHandlers {
 		[CircleHandler.TYPE, new CircleHandler()],
 		[LWPolylineHandler.TYPE, new LWPolylineHandler()],
 		[ArcHandler.TYPE, new ArcHandler()],
+		[LineHandler.TYPE, new LineHandler()],
+		[MTextHandler.TYPE, new MTextHandler()],
 	]);
 
 	/**

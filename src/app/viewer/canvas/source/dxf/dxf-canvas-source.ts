@@ -4,6 +4,7 @@ import {Dxf, DxfEntity} from "dxf";
 import {EntityHandler} from "./handler/entity-handler";
 import {EntityHandlers} from "./handler/entity-handlers";
 import {Bounds3D} from "../util/bounds";
+import {MTextHandler} from "./handler/mtext-handler";
 
 /**
  * A canvas source read from DXF.
@@ -35,6 +36,8 @@ export class DxfCanvasSource implements CanvasSource {
 	 */
 	public async draw(scene: Scene, progressConsumer: (progress: number) => Promise<boolean>): Promise<Bounds3D> {
 		this.resetBounds();
+
+		await MTextHandler.init();
 
 		const totalEntityCount: number = this.dxf.entities.length;
 		let counter: number = 0;

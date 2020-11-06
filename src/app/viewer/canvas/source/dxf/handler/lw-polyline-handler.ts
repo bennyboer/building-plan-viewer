@@ -37,7 +37,7 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 		// TODO Support different line types (dashed, dotted, ...).
 
 		const color: number = this.retrieveColor(entity, dxf);
-		const material: Material = new LineBasicMaterial({linewidth: 1, color: color});
+		const material: Material = new LineBasicMaterial({linewidth: e.thickness ?? 1, color: color});
 
 		return new Line(geometry, material);
 	}
