@@ -7,3 +7,9 @@
 	<span class="message">{{ message }}</span>
 </div>
 
+<div mat-dialog-actions class="actions" *ngIf="isCancelAllowed">
+	<button mat-stroked-button (click)="onCancel()">
+		Cancel
+	</button>
+</div>
+

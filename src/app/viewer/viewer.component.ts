@@ -17,7 +17,7 @@ import {CanvasSourceReaders} from "./canvas/source/canvas-source-readers";
 import {CanvasSourceReader} from "./canvas/source/canvas-source-reader";
 import {CanvasSource} from "./canvas/source/canvas-source";
 import {LoadingDialogService} from "./dialog/loading/service/loading-dialog.service";
-import {CanvasComponent} from "./canvas/canvas.component";
+import {CanvasComponent, LoadEvent} from "./canvas/canvas.component";
 
 /**
  * Viewer component displaying the building plan, etc.
@@ -72,6 +72,21 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	public canvasSource: CanvasSource;
 
 	/**
+	 * Subscription to load events from the canvas component.
+	 */
+	private loadEventSub: Subscription;
+
+	/**
+	 * Subscription to loading dialog cancel events.
+	 */
+	private loadingDialogCancelSub: Subscription;
+
+	/**
+	 * Whether cancelling the loading is currently requested.
+	 */
+	private cancelRequested: boolean = false;
+
+	/**
 	 * Canvas component of the viewer.
 	 */
 	@ViewChild(CanvasComponent)
@@ -90,6 +105,13 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	 * Called on component destruction.
 	 */
 	public ngOnDestroy(): void {
+		if (!!this.loadEventSub) {
+			this.loadEventSub.unsubscribe();
+		}
+		if (!!this.loadingDialogCancelSub) {
+			this.loadingDialogCancelSub.unsubscribe();
+		}
+
 		this.cleanupControlBindings();
 	}
 
@@ -140,17 +162,48 @@ export class ViewerComponent implements OnInit, OnDestroy {
 			throw new Error(`File with extension '${FileUtil.getFileEnding(file)}' is unsupported`);
 		}
 
-		this.loadingDialogService.open({message: "Loading file..."});
+		this.loadingDialogService.open({message: "Loading file...", progress: 0});
+
+		if (!this.loadEventSub) {
+			this.loadEventSub = this.canvasComponent.loadEvents.subscribe((event) => this.onCanvasLoading(event));
+		}
 
 		this.canvasSource = await reader.read(file);
 		this.canvasComponent.source = this.canvasSource;
 	}
 
 	/**
-	 * Called when the canvas loading has finished (Rendering of a CAD file is done).
+	 * Called when the canvas loading has finished or started (Rendering of the CAD file).
+	 * @param event that occurred
 	 */
-	public onCanvasLoaded(): void {
-		this.loadingDialogService.close();
+	public onCanvasLoading(event: LoadEvent): void {
+		if (event.isLoading) {
+			this.loadingDialogService.open({
+				message: "Drawing...",
+				progress: event.progress,
+				cancelAllowed: true
+			}).then(() => {
+				if (!this.loadingDialogCancelSub) {
+					this.cancelRequested = false;
+					this.loadingDialogCancelSub = this.loadingDialogService.cancelEvents().subscribe(() => {
+						this.cancelRequested = true;
+					});
+				}
+
+				if (this.cancelRequested) {
+					event.cancelLoading();
+				} else {
+					event.continueLoading();
+				}
+			});
+		} else {
+			this.loadingDialogService.close();
+
+			if (!!this.loadingDialogCancelSub) {
+				this.loadingDialogCancelSub.unsubscribe();
+				this.loadingDialogCancelSub = null;
+			}
+		}
 	}
 
 	/**

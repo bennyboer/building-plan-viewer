@@ -3,16 +3,18 @@ import {
 	ChangeDetectorRef,
 	Component,
 	ElementRef,
-	EventEmitter,
 	HostListener,
 	Input,
 	OnDestroy,
-	Output,
+	OnInit,
 	Renderer2
 } from "@angular/core";
 import {CanvasSource} from "./source/canvas-source";
 import {Camera, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer} from "three";
 import {Bounds2D, Bounds3D, BoundsUtil} from "./source/util/bounds";
+import {ThemeService} from "../../util/theme/theme.service";
+import {Observable, Subject, Subscription} from "rxjs";
+import {DxfGlobals} from "./source/dxf/util/dxf-globals";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -23,7 +25,7 @@ import {Bounds2D, Bounds3D, BoundsUtil} from "./source/util/bounds";
 	styleUrls: ["canvas.component.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CanvasComponent implements OnDestroy {
+export class CanvasComponent implements OnDestroy, OnInit {
 
 	/**
 	 * Default zoom setting.
@@ -31,10 +33,9 @@ export class CanvasComponent implements OnDestroy {
 	private static readonly DEFAULT_ZOOM: number = 0.9;
 
 	/**
-	 * Event emitter emitting events when a file has been rendered/loaded.
+	 * Event emitter emitting events when a file has started or finished rendering/loading.
 	 */
-	@Output()
-	private readonly load: EventEmitter<void> = new EventEmitter<void>();
+	private readonly load: Subject<LoadEvent> = new Subject<LoadEvent>();
 
 	/**
 	 * Source that should be displayed by the component.
@@ -74,17 +75,30 @@ export class CanvasComponent implements OnDestroy {
 	 */
 	private repaintRequested: boolean = false;
 
+	/**
+	 * Subscription to theme changes.
+	 */
+	private themeChangeSub: Subscription;
+
 	constructor(
 		private readonly cd: ChangeDetectorRef,
 		private readonly element: ElementRef,
-		private readonly ngRenderer: Renderer2
+		private readonly ngRenderer: Renderer2,
+		private readonly themeService: ThemeService,
 	) {
+	}
+
+	/**
+	 * Get a stream of load events.
+	 */
+	public get loadEvents(): Observable<LoadEvent> {
+		return this.load.asObservable();
 	}
 
 	/**
 	 * Get the source the component should display.
 	 */
-	get source(): CanvasSource {
+	public get source(): CanvasSource {
 		return this._source;
 	}
 
@@ -93,10 +107,10 @@ export class CanvasComponent implements OnDestroy {
 	 * @param value to set
 	 */
 	@Input("src")
-	set source(value: CanvasSource) {
+	public set source(value: CanvasSource) {
 		this._source = value;
 
-		this.onUpdated();
+		this.onUpdated(true);
 	}
 
 	/**
@@ -110,15 +124,51 @@ export class CanvasComponent implements OnDestroy {
 
 	/**
 	 * Called when the current source to display is updated.
+	 * @param reset whether to reset the viewport to the initial state
 	 */
-	private async onUpdated(): Promise<void> {
+	private onUpdated(reset: boolean): void {
+		this.load.next({
+			isLoading: true, progress: 0, continueLoading: () => {
+			},
+			cancelLoading: () => {
+			}
+		});
+
+		this.onUpdatedInternal(reset).then(() => {
+			this.load.next({
+				isLoading: false, progress: 100, continueLoading: () => {
+				},
+				cancelLoading: () => {
+				}
+			});
+		});
+	}
+
+	/**
+	 * Internal on update method.
+	 * @param reset whether to reset the viewport to the initial state
+	 */
+	private async onUpdatedInternal(reset: boolean): Promise<void> {
 		this.clearScene();
 
-		const bounds: Bounds3D = this._source.draw(this.scene);
+		const bounds: Bounds3D = await this._source.draw(this.scene, async (progress) => {
+			return await new Promise<boolean>(
+				(resolve) => {
+					this.load.next({
+						isLoading: true,
+						progress,
+						continueLoading: () => {
+							resolve(true);
+						},
+						cancelLoading: () => {
+							resolve(false);
+						}
+					});
+				}
+			);
+		});
 
-		this.updateViewport(bounds, true);
-
-		this.load.emit();
+		this.updateViewport(bounds, reset);
 	}
 
 	/**
@@ -239,11 +289,42 @@ export class CanvasComponent implements OnDestroy {
 	}
 
 	/**
+	 * Called on component initialization.
+	 */
+	public ngOnInit(): void {
+		if (this.themeService.darkMode) {
+			DxfGlobals.setContrastColor(0xFAFAFA);
+			DxfGlobals.setBackgroundColor(0x2C2C2C);
+		} else {
+			DxfGlobals.setContrastColor(0x2C2C2C);
+			DxfGlobals.setBackgroundColor(0xFAFAFA);
+		}
+
+		this.themeChangeSub = this.themeService.changes.subscribe(isDarkMode => {
+			if (isDarkMode) {
+				DxfGlobals.setContrastColor(0xFAFAFA);
+				DxfGlobals.setBackgroundColor(0x2C2C2C);
+			} else {
+				DxfGlobals.setContrastColor(0x2C2C2C);
+				DxfGlobals.setBackgroundColor(0xFAFAFA);
+			}
+
+			if (!!this.source) {
+				this.onUpdated(false);
+			}
+		});
+	}
+
+	/**
 	 * Called on the component destruction.
 	 */
 	public ngOnDestroy(): void {
 		this.scene.dispose();
 		this.renderer.dispose();
+
+		this.load.complete();
+
+		this.themeChangeSub.unsubscribe();
 	}
 
 	/**
@@ -260,5 +341,32 @@ export class CanvasComponent implements OnDestroy {
 		// Update renderers canvas size
 		this.renderer.setSize(bounds.width, bounds.height);
 	}
+
+}
+
+/**
+ * Load events published by the canvas component.
+ */
+export interface LoadEvent {
+
+	/**
+	 * Current progress in range [0; 100].
+	 */
+	progress: number;
+
+	/**
+	 * Whether loading is in progress.
+	 */
+	isLoading: boolean;
+
+	/**
+	 * Function that must be called to continue loading.
+	 */
+	continueLoading: () => void;
+
+	/**
+	 * Function that must be called to cancel loading.
+	 */
+	cancelLoading: () => void;
 
 }

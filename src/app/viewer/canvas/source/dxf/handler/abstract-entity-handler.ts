@@ -1,6 +1,7 @@
 import {EntityHandler} from "./entity-handler";
 import {Object3D} from "three";
 import {Dxf, DxfEntity, DxfLayer} from "../dxf";
+import {DxfGlobals} from "../util/dxf-globals";
 
 /**
  * Abstract entity handler.
@@ -8,9 +9,9 @@ import {Dxf, DxfEntity, DxfLayer} from "../dxf";
 export abstract class AbstractEntityHandler implements EntityHandler {
 
 	/**
-	 * The default color in case none is specified.
+	 * Maximum allowed color difference between two colors to be considered distinctive.
 	 */
-	private static readonly DEFAULT_COLOR: number = 0x000000;
+	private static readonly MAX_DISTINCT_COLOR_DIFF: number = 0x300000;
 
 	/**
 	 * Process the passed entity.
@@ -26,13 +27,27 @@ export abstract class AbstractEntityHandler implements EntityHandler {
 	 */
 	protected retrieveColor(entity: DxfEntity, dxf: Dxf): number {
 		if (!!entity.colorNumber) {
-			return entity.colorNumber;
+			return AbstractEntityHandler.makeSureColorIsDistinctFromBackground(entity.colorNumber);
 		} else if (!!dxf.tables && !!dxf.tables.layers && !!dxf.tables.layers[entity.layer]) {
 			const layer: DxfLayer = dxf.tables.layers[entity.layer];
-			return layer.colorNumber;
+			return AbstractEntityHandler.makeSureColorIsDistinctFromBackground(layer.colorNumber);
 		} else {
-			return AbstractEntityHandler.DEFAULT_COLOR;
+			return DxfGlobals.getContrastColor();
 		}
+	}
+
+	/**
+	 * Function making sure the passed color is distinct from the background color.
+	 * @param color to check/convert
+	 */
+	private static makeSureColorIsDistinctFromBackground(color: number): number {
+		const diff: number = Math.abs(color - DxfGlobals.getBackgroundColor());
+
+		if (diff < AbstractEntityHandler.MAX_DISTINCT_COLOR_DIFF) {
+			return 0xFFFFFF - color;
+		}
+
+		return color;
 	}
 
 }

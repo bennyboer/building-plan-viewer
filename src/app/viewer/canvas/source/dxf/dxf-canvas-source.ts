@@ -31,15 +31,28 @@ export class DxfCanvasSource implements CanvasSource {
 	/**
 	 * Draw the source on the given scene.
 	 * @param scene to draw on
+	 * @param progressConsumer consumer to publish the current progress in range [0; 100] over
 	 */
-	public draw(scene: Scene): Bounds3D {
+	public async draw(scene: Scene, progressConsumer: (progress: number) => Promise<boolean>): Promise<Bounds3D> {
 		this.resetBounds();
 
+		const totalEntityCount: number = this.dxf.entities.length;
+		let counter: number = 0;
+		const publishProgressEvery: number = Math.round(totalEntityCount / 1000);
 		for (const entity of this.dxf.entities) {
 			try {
 				this.drawEntity(entity, scene);
 			} catch (e) {
 				console.warn(e.message);
+			}
+
+			counter++;
+
+			if (counter % publishProgressEvery === 0) {
+				const cancelRequested: boolean = !(await progressConsumer(counter * 100 / totalEntityCount));
+				if (cancelRequested) {
+					break;
+				}
 			}
 		}
 

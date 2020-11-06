@@ -9,6 +9,11 @@ export interface LoadingDialogConfig {
 	message: string;
 
 	/**
+	 * Whether cancelling the dialog is allowed.
+	 */
+	cancelAllowed?: boolean;
+
+	/**
 	 * Current progress of the dialog.
 	 * If this is null or undefined a indeterminate progress indicator will
 	 * be shown.
