@@ -167,6 +167,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 				}
 			);
 		});
+		this.lastBounds = bounds;
 
 		this.updateViewport(bounds, reset);
 	}
@@ -180,10 +181,11 @@ export class CanvasComponent implements OnDestroy, OnInit {
 
 		const cam: OrthographicCamera = new OrthographicCamera(
 			-viewport.width / 2,
+			viewport.width / 2,
 			viewport.height / 2,
-			viewport.height / 2,
-			-viewport.width / 2,
+			-viewport.height / 2,
 		);
+
 		cam.position.z = 1;
 		this.camera = cam;
 
@@ -334,12 +336,12 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	public onWindowResize(event: Event): void {
 		const bounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
 
+		// Update renderers canvas size
+		this.renderer.setSize(bounds.width, bounds.height);
+
 		if (!!this.lastBounds) {
 			this.updateViewport(this.lastBounds, false);
 		}
-
-		// Update renderers canvas size
-		this.renderer.setSize(bounds.width, bounds.height);
 	}
 
 }

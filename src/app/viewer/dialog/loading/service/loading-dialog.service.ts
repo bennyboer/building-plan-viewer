@@ -48,10 +48,13 @@ export class LoadingDialogService implements OnDestroy {
 						disableClose: true,
 					});
 
+
 					this.dialogRef.afterOpened().subscribe(() => {
-						this.cancelEventSub = this.dialogRef.componentInstance.cancelEvents().subscribe(() => {
-							this.cancelSubject.next();
-						});
+						if (!!this.dialogRef) {
+							this.cancelEventSub = this.dialogRef.componentInstance.cancelEvents().subscribe(() => {
+								this.cancelSubject.next();
+							});
+						}
 
 						resolve();
 					});
@@ -82,8 +85,11 @@ export class LoadingDialogService implements OnDestroy {
 	public close(): void {
 		if (this.dialogRef !== null) {
 			this.dialogRef.close(); // Close dialog
-			this.cancelEventSub.unsubscribe();
 			this.dialogRef = null;
+
+			if (!!this.cancelEventSub) {
+				this.cancelEventSub.unsubscribe();
+			}
 		}
 	}
 
