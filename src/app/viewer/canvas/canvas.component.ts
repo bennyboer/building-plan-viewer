@@ -36,6 +36,21 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private static readonly DEFAULT_ZOOM: number = 0.9;
 
 	/**
+	 * Factor by which to slow the current zooming speed per second.
+	 */
+	private static readonly SCROLL_ZOOM_SLOW_FACTOR: number = 5.0;
+
+	/**
+	 * Minimum scroll zoom speed.
+	 */
+	private static readonly SCROLL_ZOOM_MIN_SPEED: number = 0.001;
+
+	/**
+	 * Maximum scroll zoom speed.
+	 */
+	private static readonly SCROLL_ZOOM_MAX_SPEED: number = 0.01;
+
+	/**
 	 * Acceleration factor for the arrow key navigation.
 	 * A factor of for example 0.01 would mean that the movement
 	 * speed would accelerate by 1% of the scene width (or height) per second.
@@ -138,6 +153,26 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private mouseUpListener: (event: MouseEvent) => void;
 
 	/**
+	 * Mouse wheel event listener on the canvas component element.
+	 */
+	private mouseWheelListener: (event: WheelEvent) => void;
+
+	/**
+	 * Touch start listener on the canvas component element.
+	 */
+	private touchStartListener: (event: TouchEvent) => void;
+
+	/**
+	 * Touch move listener on the canvas component element.
+	 */
+	private touchMoveListener: (event: TouchEvent) => void;
+
+	/**
+	 * Touch end listener on the canvas component element.
+	 */
+	private touchEndListener: (event: TouchEvent) => void;
+
+	/**
 	 * Whether arrow key navigation is currently in progress.
 	 */
 	private isArrowKeyNavigationInProgress: boolean = false;
@@ -180,6 +215,41 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Position of the scenes camera at panning start.
 	 */
 	private panStartSceneCameraPosition: Point;
+
+	/**
+	 * ID of the touch starting panning.
+	 */
+	private startTouchID: number;
+
+	/**
+	 * ID of a second touch used for zooming.
+	 */
+	private secondTouchIDForZooming: number = -1;
+
+	/**
+	 * Start distance between two fingers for zooming.
+	 */
+	private startTouchDistanceForZooming: number;
+
+	/**
+	 * Start zoom before pinching with two fingers.
+	 */
+	private startZoomBeforePinching: number;
+
+	/**
+	 * Whether mouse wheel scroll is in progress.
+	 */
+	private isMouseWheelZoomInProgress: boolean = false;
+
+	/**
+	 * Current speed of the mouse wheel zoom.
+	 */
+	private currentMouseWheelZoomSpeed: number = 0;
+
+	/**
+	 * Last timestamp of the mouse wheen zooming loop.
+	 */
+	private lastMouseWheelZoomingTimestamp: number = -1;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -550,6 +620,10 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		let keyNavigationFunction: () => void;
 		keyNavigationFunction = () => {
 			window.requestAnimationFrame((timestamp) => {
+				if (!this.isArrowKeyNavigationInProgress) {
+					return; // Break loop
+				}
+
 				const isInitialLoop: boolean = this.lastKeyNavigationTimestamp === -1;
 
 				// Get time difference in millseconds between now and the last animation frame.
@@ -636,10 +710,12 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.mouseDownListener = event => this.onMouseDown(event);
 		this.mouseMoveListener = event => this.onMouseMove(event);
 		this.mouseUpListener = event => this.onMouseUp(event);
+		this.mouseWheelListener = event => this.onMouseWheel(event);
 
 		this.element.nativeElement.addEventListener("mousedown", this.mouseDownListener);
 		this.element.nativeElement.addEventListener("mousemove", this.mouseMoveListener);
 		this.element.nativeElement.addEventListener("mouseup", this.mouseUpListener);
+		this.element.nativeElement.addEventListener("wheel", this.mouseWheelListener);
 	}
 
 	/**
@@ -649,6 +725,85 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.element.nativeElement.removeEventListener("mousedown", this.mouseDownListener);
 		this.element.nativeElement.removeEventListener("mousemove", this.mouseMoveListener);
 		this.element.nativeElement.removeEventListener("mouseup", this.mouseUpListener);
+		this.element.nativeElement.removeEventListener("wheel", this.mouseWheelListener);
+	}
+
+	/**
+	 * Called on a mouse wheel event on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onMouseWheel(event: WheelEvent): void {
+		event.preventDefault();
+
+		// Check whether to zoom in or out
+		const zoomIn: boolean = event.deltaY > 0;
+
+		// Accelerate zooming speed to the maximum.
+		this.currentMouseWheelZoomSpeed = (zoomIn ? 1 : -1) * CanvasComponent.SCROLL_ZOOM_MAX_SPEED;
+
+		this.startMouseWheelZooming();
+	}
+
+	/**
+	 * Start the mouse wheel zooming.
+	 */
+	private startMouseWheelZooming(): void {
+		if (!this.isMouseWheelZoomInProgress) {
+			this.isMouseWheelZoomInProgress = true;
+		}
+
+		this.isMouseWheelZoomInProgress = true;
+
+		let zoomingFunction: () => void;
+		zoomingFunction = () => {
+			window.requestAnimationFrame((timestamp) => {
+				if (!this.isMouseWheelZoomInProgress) {
+					return; // Break loop
+				}
+
+				const isInitialLoop: boolean = this.lastMouseWheelZoomingTimestamp === -1;
+
+				// Get time difference in millseconds between now and the last animation frame.
+				const diff: number = !isInitialLoop ? timestamp - this.lastMouseWheelZoomingTimestamp : 0;
+				this.lastMouseWheelZoomingTimestamp = timestamp;
+
+				const zoomIn: boolean = this.currentMouseWheelZoomSpeed > 0;
+				const scrollFactor: number = 1 - Math.abs(this.currentMouseWheelZoomSpeed);
+
+				if (this.camera instanceof OrthographicCamera) {
+					if (zoomIn) {
+						this.camera.zoom *= scrollFactor;
+					} else {
+						this.camera.zoom /= scrollFactor;
+					}
+
+					this.camera.updateProjectionMatrix();
+					this.repaintImmediately();
+				}
+
+				// Slow acceleration factor
+				if (this.currentMouseWheelZoomSpeed > 0) {
+					this.currentMouseWheelZoomSpeed = Math.max(0, this.currentMouseWheelZoomSpeed - this.currentMouseWheelZoomSpeed * CanvasComponent.SCROLL_ZOOM_SLOW_FACTOR * diff / 1000);
+				} else {
+					this.currentMouseWheelZoomSpeed = Math.min(0, this.currentMouseWheelZoomSpeed - this.currentMouseWheelZoomSpeed * CanvasComponent.SCROLL_ZOOM_SLOW_FACTOR * diff / 1000);
+				}
+
+				if (Math.abs(this.currentMouseWheelZoomSpeed) < CanvasComponent.SCROLL_ZOOM_MIN_SPEED) {
+					this.currentMouseWheelZoomSpeed = 0;
+				}
+
+				if (this.currentMouseWheelZoomSpeed === 0) {
+					// Leave loop
+					this.isMouseWheelZoomInProgress = false;
+					this.lastMouseWheelZoomingTimestamp = -1;
+				} else {
+					// Continue loop
+					zoomingFunction();
+				}
+			});
+		};
+
+		zoomingFunction();
 	}
 
 	/**
@@ -658,17 +813,8 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private onMouseDown(event: MouseEvent): void {
 		const isLeftButton: boolean = event.button === 0;
 
-		if (isLeftButton && this.isPanningAllowed()) {
-			this.isPanInProgress = true;
-
-			this.panStartMousePosition = {
-				x: event.clientX,
-				y: event.clientY
-			};
-			this.panStartSceneCameraPosition = {
-				x: this.camera.position.x,
-				y: this.camera.position.y
-			};
+		if (isLeftButton) {
+			this.initializePanning(event.clientX, event.clientY);
 		}
 	}
 
@@ -677,11 +823,53 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * @param event that occurred
 	 */
 	private onMouseMove(event: MouseEvent): void {
+		this.pan(event.clientX, event.clientY);
+	}
+
+	/**
+	 * Called on mouse up on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onMouseUp(event: MouseEvent): void {
+		this.stopPanning();
+	}
+
+	/**
+	 * Initialize the panning process at the passed mouse or touch coordinates.
+	 * @param x coordinate of the mouse or finger
+	 * @param y coordinate of the mouse or finger
+	 */
+	private initializePanning(x: number, y: number): void {
+		if (!this.isPanningAllowed()) {
+			return;
+		}
+
+		this.isPanInProgress = true;
+
+		this.panStartMousePosition = {
+			x,
+			y
+		};
+		this.panStartSceneCameraPosition = {
+			x: this.camera.position.x,
+			y: this.camera.position.y
+		};
+	}
+
+	/**
+	 * Pan the current scene for the given current x and y coordinate
+	 * that respond for example the current mouse or finger position.
+	 * @param x coordinate of the mouse or finger
+	 * @param y coordinate of the mouse or finger
+	 */
+	private pan(x: number, y: number): void {
 		if (this.isPanInProgress && this.isPanningAllowed()) {
 			const elementBounds: DOMRect = this.element.nativeElement.getBoundingClientRect();
 
-			const xDiffFactor: number = (event.clientX - this.panStartMousePosition.x) / elementBounds.width;
-			const yDiffFactor: number = (event.clientY - this.panStartMousePosition.y) / elementBounds.height;
+			const zoom: number = this.camera instanceof OrthographicCamera ? this.camera.zoom : 1.0;
+
+			const xDiffFactor: number = (x - this.panStartMousePosition.x) / elementBounds.width / zoom;
+			const yDiffFactor: number = (y - this.panStartMousePosition.y) / elementBounds.height / zoom;
 
 			this.camera.position.x = this.panStartSceneCameraPosition.x - xDiffFactor * this.currentViewport.width;
 			this.camera.position.y = this.panStartSceneCameraPosition.y + yDiffFactor * this.currentViewport.height;
@@ -698,10 +886,9 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	}
 
 	/**
-	 * Called on mouse up on the canvas component element.
-	 * @param event that occurred
+	 * Stop the panning process.
 	 */
-	private onMouseUp(event: MouseEvent): void {
+	private stopPanning(): void {
 		this.isPanInProgress = false;
 	}
 
@@ -709,14 +896,90 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Register user navigation using touch input.
 	 */
 	private registerUserNavigationWithTouch(): void {
-		// TODO
+		this.touchStartListener = event => this.onTouchStart(event);
+		this.touchMoveListener = event => this.onTouchMove(event);
+		this.touchEndListener = event => this.onTouchEnd(event);
+
+		this.element.nativeElement.addEventListener("touchstart", this.touchStartListener);
+		this.element.nativeElement.addEventListener("touchmove", this.touchMoveListener);
+		this.element.nativeElement.addEventListener("touchend", this.touchEndListener);
 	}
 
 	/**
 	 * Unregister user navigation using touch input.
 	 */
 	private unregisterUserNavigationWithTouch(): void {
-		// TODO
+		this.element.nativeElement.removeEventListener("touchstart", this.touchStartListener);
+		this.element.nativeElement.removeEventListener("touchmove", this.touchMoveListener);
+		this.element.nativeElement.removeEventListener("touchend", this.touchEndListener);
+	}
+
+	/**
+	 * Called on touch start on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onTouchStart(event: TouchEvent): void {
+		if (event.touches.length === 1 && !this.isPanInProgress) {
+			const touch: Touch = event.changedTouches[0];
+			this.startTouchID = touch.identifier;
+
+			this.initializePanning(touch.clientX, touch.clientY);
+		} else if (event.touches.length === 2 && this.secondTouchIDForZooming === -1) {
+			this.secondTouchIDForZooming = event.touches[1].identifier;
+
+			this.startTouchDistanceForZooming = Math.hypot(
+				event.touches[1].clientX - event.touches[0].clientX,
+				event.touches[1].clientY - event.touches[0].clientY
+			);
+
+			if (this.camera instanceof OrthographicCamera) {
+				this.startZoomBeforePinching = this.camera.zoom;
+			}
+		}
+	}
+
+	/**
+	 * Called on the touch move event on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onTouchMove(event: TouchEvent): void {
+		if (event.touches.length === 2 && this.secondTouchIDForZooming != -1) {
+			// Zoom by pinching
+			const currentFingerDistance: number = Math.hypot(
+				event.touches[1].clientX - event.touches[0].clientX,
+				event.touches[1].clientY - event.touches[0].clientY
+			);
+
+			if (this.camera instanceof OrthographicCamera) {
+				this.camera.zoom = this.startZoomBeforePinching * currentFingerDistance / this.startTouchDistanceForZooming;
+				this.camera.updateProjectionMatrix();
+				this.repaint();
+			}
+			return;
+		}
+
+		if (event.changedTouches.length === 1) {
+			const touch: Touch = event.changedTouches[0];
+
+			if (touch.identifier === this.startTouchID) {
+				this.pan(touch.clientX, touch.clientY);
+			}
+		}
+	}
+
+	/**
+	 * Called on touch end on the canvas component element.
+	 * @param event that occurred
+	 */
+	private onTouchEnd(event: TouchEvent): void {
+		for (let i = 0; i < event.changedTouches.length; i++) {
+			const touch: Touch = event.changedTouches[i];
+			if (touch.identifier === this.startTouchID) {
+				this.stopPanning();
+			} else if (touch.identifier === this.secondTouchIDForZooming) {
+				this.secondTouchIDForZooming = -1; // Stop zooming by pinching
+			}
+		}
 	}
 
 	/**
@@ -733,6 +996,9 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.unregisterUserNavigationWithKeyboard();
 		this.unregisterUserNavigationWithMouse();
 		this.unregisterUserNavigationWithTouch();
+
+		this.isMouseWheelZoomInProgress = false;
+		this.isArrowKeyNavigationInProgress = false;
 	}
 
 	/**
