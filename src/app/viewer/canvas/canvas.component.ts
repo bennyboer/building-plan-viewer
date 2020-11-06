@@ -15,6 +15,8 @@ import {Bounds2D, Bounds3D, BoundsUtil} from "./source/util/bounds";
 import {ThemeService} from "../../util/theme/theme.service";
 import {Observable, Subject, Subscription} from "rxjs";
 import {DxfGlobals} from "./source/dxf/util/dxf-globals";
+import {DeviceUtil} from "../../util/device-util";
+import {DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, UP_ARROW} from "@angular/cdk/keycodes";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -31,6 +33,25 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Default zoom setting.
 	 */
 	private static readonly DEFAULT_ZOOM: number = 0.9;
+
+	/**
+	 * Acceleration factor for the arrow key navigation.
+	 * A factor of for example 0.01 would mean that the movement
+	 * speed would accelerate by 1% of the scene width (or height) per second.
+	 */
+	private static readonly ARROW_KEY_NAVIGATION_ACCELERATION_FACTOR: number = 4.0;
+
+	/**
+	 * Factor with which the current speed will be slowed
+	 * each second when no arrow key in one direction is active.
+	 */
+	private static readonly ARROW_KEY_NAVIGATION_SLOW_FACTOR: number = 5.0;
+
+	/**
+	 * Maximum speed of the arrow key navigation given as factor of the current
+	 * scene width or height.
+	 */
+	private static readonly ARROW_KEY_NAVIGATION_MAX_SPEED_FACTOR: number = 0.8;
 
 	/**
 	 * Event emitter emitting events when a file has started or finished rendering/loading.
@@ -66,6 +87,11 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private lastBounds: Bounds3D;
 
 	/**
+	 * The current viewport.
+	 */
+	private currentViewport: Bounds2D;
+
+	/**
 	 * Whether the canvas is initialized.
 	 */
 	private initialized: boolean = false;
@@ -79,6 +105,45 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Subscription to theme changes.
 	 */
 	private themeChangeSub: Subscription;
+
+	/**
+	 * Event listener for key down events.
+	 */
+	private windowKeyDownListener: (event: KeyboardEvent) => void;
+
+	/**
+	 * Event listener for key up events.
+	 */
+	private windowKeyUpListener: (event: KeyboardEvent) => void;
+
+	/**
+	 * Whether arrow key navigation is currently in progress.
+	 */
+	private isArrowKeyNavigationInProgress: boolean = false;
+
+	/**
+	 * Registry for currently pressed keys.
+	 */
+	private pressedKeyRegistry: PressedKeyRegistry = {
+		up: false,
+		down: false,
+		left: false,
+		right: false
+	};
+
+	/**
+	 * Current speed vector of arrow key navigation.
+	 * It is given in percent of the current scene width per second.
+	 * For example a vector of [0.01, -0.02] would mean we would
+	 * navigate with a speed of 1 % of the scene width per second in horizontal direction (to the right)
+	 * and 2% of the scene width in vertical direction (to the top).
+	 */
+	private currentArrowKeyNavigationSpeedVector: [number, number] = [0, 0];
+
+	/**
+	 * Timestamp of the last key navigation step.
+	 */
+	private lastKeyNavigationTimestamp: number = -1;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -226,6 +291,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 */
 	private updateViewport(bounds: Bounds3D, reset: boolean) {
 		const viewport: Bounds2D = this.buildViewport(bounds);
+		this.currentViewport = viewport;
 
 		if (!this.initialized) {
 			this.initialized = true;
@@ -253,6 +319,13 @@ export class CanvasComponent implements OnDestroy, OnInit {
 				})
 			);
 		}
+	}
+
+	/**
+	 * Repaint the scene immediately.
+	 */
+	private repaintImmediately(): void {
+		this.renderer.render(this.scene, this.camera);
 	}
 
 	/**
@@ -294,6 +367,14 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Called on component initialization.
 	 */
 	public ngOnInit(): void {
+		this.onInitHandleThemeChanges();
+		this.setupUserNavigation();
+	}
+
+	/**
+	 * Handle theme changes on initialization.
+	 */
+	private onInitHandleThemeChanges(): void {
 		if (this.themeService.darkMode) {
 			DxfGlobals.setContrastColor(0xFAFAFA);
 			DxfGlobals.setBackgroundColor(0x2C2C2C);
@@ -318,6 +399,205 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	}
 
 	/**
+	 * Setup the user navigation (keyboard, mouse, touch).
+	 */
+	private setupUserNavigation(): void {
+		this.registerUserNavigationWithKeyboard();
+		this.registerUserNavigationUsingMouse();
+
+		if (DeviceUtil.isTouchSupported()) {
+			this.registerUserNavigationWithTouch();
+		}
+	}
+
+	/**
+	 * Register user navigation using keyboard input.
+	 */
+	private registerUserNavigationWithKeyboard(): void {
+		this.windowKeyDownListener = event => this.onKeyDown(event);
+		this.windowKeyUpListener = event => this.onKeyUp(event);
+
+		window.addEventListener("keydown", this.windowKeyDownListener);
+		window.addEventListener("keyup", this.windowKeyUpListener);
+	}
+
+	/**
+	 * Unregister user navigation using keyboard input.
+	 */
+	private unregisterUserNavigationWithKeyboard(): void {
+		window.removeEventListener("keydown", this.windowKeyDownListener);
+		window.removeEventListener("keyup", this.windowKeyUpListener);
+	}
+
+	/**
+	 * Called when a key on the keyboard is down.
+	 * @param event that occurred
+	 */
+	private onKeyDown(event: KeyboardEvent): void {
+		switch (event.keyCode) {
+			case UP_ARROW:
+			case DOWN_ARROW:
+			case LEFT_ARROW:
+			case RIGHT_ARROW:
+				this.onArrowKeyChanged(event.keyCode, true);
+				break;
+		}
+	}
+
+	/**
+	 * Called when a key on the keyboard is up.
+	 * @param event that occurred
+	 */
+	private onKeyUp(event: KeyboardEvent): void {
+		switch (event.keyCode) {
+			case UP_ARROW:
+			case DOWN_ARROW:
+			case LEFT_ARROW:
+			case RIGHT_ARROW:
+				this.onArrowKeyChanged(event.keyCode, false);
+				break;
+		}
+	}
+
+	/**
+	 * Called when an arrow keys status has changed..
+	 * @param keyCode of the arrow key
+	 * @param isDown whether the key is currently down
+	 */
+	private onArrowKeyChanged(keyCode: number, isDown: boolean): void {
+		switch (keyCode) {
+			case UP_ARROW:
+				this.pressedKeyRegistry.up = isDown;
+				break;
+			case DOWN_ARROW:
+				this.pressedKeyRegistry.down = isDown;
+				break;
+			case LEFT_ARROW:
+				this.pressedKeyRegistry.left = isDown;
+				break;
+			case RIGHT_ARROW:
+				this.pressedKeyRegistry.right = isDown;
+				break;
+		}
+
+		if (isDown) {
+			this.startArrowKeyNavigation();
+		}
+	}
+
+	/**
+	 * Start the arrow key navigation of the scene.
+	 */
+	private startArrowKeyNavigation(): void {
+		if (this.isArrowKeyNavigationInProgress) {
+			return;
+		}
+
+		this.isArrowKeyNavigationInProgress = true;
+
+		let keyNavigationFunction: () => void;
+		keyNavigationFunction = () => {
+			window.requestAnimationFrame((timestamp) => {
+				const isInitialLoop: boolean = this.lastKeyNavigationTimestamp === -1;
+
+				// Get time difference in millseconds between now and the last animation frame.
+				const diff: number = !isInitialLoop ? timestamp - this.lastKeyNavigationTimestamp : 0;
+				this.lastKeyNavigationTimestamp = timestamp;
+
+				// Accelerate or slow the current speed vector based on
+				// whether the keys are currently pressed.
+				let currentXSpeed: number = this.currentArrowKeyNavigationSpeedVector[0];
+				let currentYSpeed: number = this.currentArrowKeyNavigationSpeedVector[1];
+
+				if (this.pressedKeyRegistry.up) {
+					currentYSpeed += this.currentViewport.height * CanvasComponent.ARROW_KEY_NAVIGATION_ACCELERATION_FACTOR * diff / 1000;
+				} else if (this.pressedKeyRegistry.down) {
+					currentYSpeed -= this.currentViewport.height * CanvasComponent.ARROW_KEY_NAVIGATION_ACCELERATION_FACTOR * diff / 1000;
+				} else {
+					// Slow vertical speed down to zero
+					if (currentYSpeed > 0) {
+						currentYSpeed = Math.max(0, currentYSpeed - currentYSpeed * CanvasComponent.ARROW_KEY_NAVIGATION_SLOW_FACTOR * diff / 1000);
+					} else {
+						currentYSpeed = Math.min(0, currentYSpeed - currentYSpeed * CanvasComponent.ARROW_KEY_NAVIGATION_SLOW_FACTOR * diff / 1000);
+					}
+				}
+
+				if (this.pressedKeyRegistry.left) {
+					currentXSpeed -= this.currentViewport.width * CanvasComponent.ARROW_KEY_NAVIGATION_ACCELERATION_FACTOR * diff / 1000;
+				} else if (this.pressedKeyRegistry.right) {
+					currentXSpeed += this.currentViewport.width * CanvasComponent.ARROW_KEY_NAVIGATION_ACCELERATION_FACTOR * diff / 1000;
+				} else {
+					// Slow horizontal speed down to zero
+					if (currentXSpeed > 0) {
+						currentXSpeed = Math.max(0, currentXSpeed - currentXSpeed * CanvasComponent.ARROW_KEY_NAVIGATION_SLOW_FACTOR * diff / 1000);
+					} else {
+						currentXSpeed = Math.min(0, currentXSpeed - currentXSpeed * CanvasComponent.ARROW_KEY_NAVIGATION_SLOW_FACTOR * diff / 1000);
+					}
+				}
+
+				// Correct speeds that exceed the maximum speed
+				const xSpeedFactor: number = Math.abs(currentXSpeed) / this.currentViewport.width;
+				if (xSpeedFactor > CanvasComponent.ARROW_KEY_NAVIGATION_MAX_SPEED_FACTOR) {
+					currentXSpeed = currentXSpeed / xSpeedFactor * CanvasComponent.ARROW_KEY_NAVIGATION_MAX_SPEED_FACTOR;
+				}
+
+				const ySpeedFactor: number = Math.abs(currentYSpeed) / this.currentViewport.height;
+				if (ySpeedFactor > CanvasComponent.ARROW_KEY_NAVIGATION_MAX_SPEED_FACTOR) {
+					currentYSpeed = currentYSpeed / ySpeedFactor * CanvasComponent.ARROW_KEY_NAVIGATION_MAX_SPEED_FACTOR;
+				}
+
+				this.currentArrowKeyNavigationSpeedVector[0] = currentXSpeed;
+				this.currentArrowKeyNavigationSpeedVector[1] = currentYSpeed;
+
+				// Adjust camera position using the current speed vector
+				if (currentXSpeed !== 0 || currentYSpeed !== 0 || isInitialLoop) {
+					this.camera.position.x += currentXSpeed * diff / 1000;
+					this.camera.position.y += currentYSpeed * diff / 1000;
+
+					// Re-render the scene
+					this.repaintImmediately();
+
+					keyNavigationFunction();
+				} else {
+					// Leave key navigation rendering loop, as there is no more movement
+					this.lastKeyNavigationTimestamp = -1;
+					this.isArrowKeyNavigationInProgress = false;
+				}
+			});
+		};
+
+		keyNavigationFunction();
+	}
+
+	/**
+	 * Register user navigation using mouse input.
+	 */
+	private registerUserNavigationUsingMouse(): void {
+		// TODO
+	}
+
+	/**
+	 * Unregister user navigation using mouse input.
+	 */
+	private unregisterUserNavigationWithMouse(): void {
+		// TODO
+	}
+
+	/**
+	 * Register user navigation using touch input.
+	 */
+	private registerUserNavigationWithTouch(): void {
+		// TODO
+	}
+
+	/**
+	 * Unregister user navigation using touch input.
+	 */
+	private unregisterUserNavigationWithTouch(): void {
+		// TODO
+	}
+
+	/**
 	 * Called on the component destruction.
 	 */
 	public ngOnDestroy(): void {
@@ -327,6 +607,10 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.load.complete();
 
 		this.themeChangeSub.unsubscribe();
+
+		this.unregisterUserNavigationWithKeyboard();
+		this.unregisterUserNavigationWithMouse();
+		this.unregisterUserNavigationWithTouch();
 	}
 
 	/**
@@ -370,5 +654,32 @@ export interface LoadEvent {
 	 * Function that must be called to cancel loading.
 	 */
 	cancelLoading: () => void;
+
+}
+
+/**
+ * Registry for currently pressed arrow keys.
+ */
+interface PressedKeyRegistry {
+
+	/**
+	 * Whether the left key is currently down.
+	 */
+	left: boolean;
+
+	/**
+	 * Whether the right key is currently down.
+	 */
+	right: boolean;
+
+	/**
+	 * Whether the top key is currently down.
+	 */
+	up: boolean;
+
+	/**
+	 * Whether the bottom key is currently down.
+	 */
+	down: boolean;
 
 }
