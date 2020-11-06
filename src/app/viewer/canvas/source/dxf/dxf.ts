@@ -190,6 +190,33 @@ export interface DxfCircleEntity extends DxfEntity, DxfPosition {
 }
 
 /**
+ * An Arc entity.
+ */
+export interface DxfArcEntity extends DxfEntity, DxfPosition {
+
+	/**
+	 * Start angle of the arc.
+	 */
+	startAngle: number;
+
+	/**
+	 * End angle of the arc.
+	 */
+	endAngle: number;
+
+	/**
+	 * Radius of the arc.
+	 */
+	r: number;
+
+	/**
+	 * Name of the arcs line type.
+	 */
+	lineTypeName: string;
+
+}
+
+/**
  * A Line entity.
  */
 export interface DxfLineEntity extends DxfEntity {

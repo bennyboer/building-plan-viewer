@@ -1,0 +1,44 @@
+import {AbstractEntityHandler} from "./abstract-entity-handler";
+import {Dxf, DxfArcEntity, DxfEntity} from "../dxf";
+import {ArcCurve, BufferGeometry, Line, LineBasicMaterial, Material, Object3D} from "three";
+
+/**
+ * Handler being able to process Arc entities.
+ */
+export class ArcHandler extends AbstractEntityHandler {
+
+	/**
+	 * Type the handler is able to process.
+	 */
+	public static readonly TYPE: string = "ARC";
+
+	/**
+	 * Process the passed entity.
+	 * @param entity to process
+	 * @param dxf the DXF format
+	 */
+	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+		const e: DxfArcEntity = entity as DxfArcEntity;
+
+		const arc: ArcCurve = new ArcCurve(
+			0,
+			0,
+			e.r,
+			e.startAngle,
+			e.endAngle,
+			false,
+		);
+
+		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(arc.getPoints(32));
+		const material: Material = new LineBasicMaterial({color: this.retrieveColor(entity, dxf)});
+
+		const result: Line = new Line(geometry, material);
+
+		result.position.x = e.x;
+		result.position.y = e.y;
+		result.position.z = e.z;
+
+		return result;
+	}
+
+}

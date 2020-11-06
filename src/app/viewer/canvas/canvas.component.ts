@@ -36,19 +36,9 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private static readonly DEFAULT_ZOOM: number = 0.9;
 
 	/**
-	 * Factor by which to slow the current zooming speed per second.
+	 * Factor by which to zoom using the mouse wheel.
 	 */
-	private static readonly SCROLL_ZOOM_SLOW_FACTOR: number = 5.0;
-
-	/**
-	 * Minimum scroll zoom speed.
-	 */
-	private static readonly SCROLL_ZOOM_MIN_SPEED: number = 0.001;
-
-	/**
-	 * Maximum scroll zoom speed.
-	 */
-	private static readonly SCROLL_ZOOM_MAX_SPEED: number = 0.01;
+	private static readonly MOUSE_WHEEL_SCROLL_SPEED: number = 0.85;
 
 	/**
 	 * Acceleration factor for the arrow key navigation.
@@ -240,16 +230,6 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Whether mouse wheel scroll is in progress.
 	 */
 	private isMouseWheelZoomInProgress: boolean = false;
-
-	/**
-	 * Current speed of the mouse wheel zoom.
-	 */
-	private currentMouseWheelZoomSpeed: number = 0;
-
-	/**
-	 * Last timestamp of the mouse wheen zooming loop.
-	 */
-	private lastMouseWheelZoomingTimestamp: number = -1;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -738,72 +718,16 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		// Check whether to zoom in or out
 		const zoomIn: boolean = event.deltaY > 0;
 
-		// Accelerate zooming speed to the maximum.
-		this.currentMouseWheelZoomSpeed = (zoomIn ? 1 : -1) * CanvasComponent.SCROLL_ZOOM_MAX_SPEED;
+		if (this.camera instanceof OrthographicCamera) {
+			if (zoomIn) {
+				this.camera.zoom *= CanvasComponent.MOUSE_WHEEL_SCROLL_SPEED;
+			} else {
+				this.camera.zoom /= CanvasComponent.MOUSE_WHEEL_SCROLL_SPEED;
+			}
 
-		this.startMouseWheelZooming();
-	}
-
-	/**
-	 * Start the mouse wheel zooming.
-	 */
-	private startMouseWheelZooming(): void {
-		if (!this.isMouseWheelZoomInProgress) {
-			this.isMouseWheelZoomInProgress = true;
+			this.camera.updateProjectionMatrix();
+			this.repaintImmediately();
 		}
-
-		this.isMouseWheelZoomInProgress = true;
-
-		let zoomingFunction: () => void;
-		zoomingFunction = () => {
-			window.requestAnimationFrame((timestamp) => {
-				if (!this.isMouseWheelZoomInProgress) {
-					return; // Break loop
-				}
-
-				const isInitialLoop: boolean = this.lastMouseWheelZoomingTimestamp === -1;
-
-				// Get time difference in millseconds between now and the last animation frame.
-				const diff: number = !isInitialLoop ? timestamp - this.lastMouseWheelZoomingTimestamp : 0;
-				this.lastMouseWheelZoomingTimestamp = timestamp;
-
-				const zoomIn: boolean = this.currentMouseWheelZoomSpeed > 0;
-				const scrollFactor: number = 1 - Math.abs(this.currentMouseWheelZoomSpeed);
-
-				if (this.camera instanceof OrthographicCamera) {
-					if (zoomIn) {
-						this.camera.zoom *= scrollFactor;
-					} else {
-						this.camera.zoom /= scrollFactor;
-					}
-
-					this.camera.updateProjectionMatrix();
-					this.repaintImmediately();
-				}
-
-				// Slow acceleration factor
-				if (this.currentMouseWheelZoomSpeed > 0) {
-					this.currentMouseWheelZoomSpeed = Math.max(0, this.currentMouseWheelZoomSpeed - this.currentMouseWheelZoomSpeed * CanvasComponent.SCROLL_ZOOM_SLOW_FACTOR * diff / 1000);
-				} else {
-					this.currentMouseWheelZoomSpeed = Math.min(0, this.currentMouseWheelZoomSpeed - this.currentMouseWheelZoomSpeed * CanvasComponent.SCROLL_ZOOM_SLOW_FACTOR * diff / 1000);
-				}
-
-				if (Math.abs(this.currentMouseWheelZoomSpeed) < CanvasComponent.SCROLL_ZOOM_MIN_SPEED) {
-					this.currentMouseWheelZoomSpeed = 0;
-				}
-
-				if (this.currentMouseWheelZoomSpeed === 0) {
-					// Leave loop
-					this.isMouseWheelZoomInProgress = false;
-					this.lastMouseWheelZoomingTimestamp = -1;
-				} else {
-					// Continue loop
-					zoomingFunction();
-				}
-			});
-		};
-
-		zoomingFunction();
 	}
 
 	/**
