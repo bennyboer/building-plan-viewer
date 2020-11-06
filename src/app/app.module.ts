@@ -16,6 +16,9 @@ import {LoadingDialogComponent} from "./viewer/dialog/loading/component/loading-
 import {LoadingDialogService} from "./viewer/dialog/loading/service/loading-dialog.service";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {LocalSettingsService} from "./util/settings/local-settings.service";
+import {ThemeService} from "./util/theme/theme.service";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -23,7 +26,8 @@ const materialModules: any[] = [
 	MatTooltipModule,
 	MatSnackBarModule,
 	MatDialogModule,
-	MatProgressBarModule
+	MatProgressBarModule,
+	MatSlideToggleModule
 ];
 
 @NgModule({
@@ -41,7 +45,9 @@ const materialModules: any[] = [
 		...materialModules
 	],
 	providers: [
-		LoadingDialogService
+		LoadingDialogService,
+		LocalSettingsService,
+		ThemeService
 	],
 	bootstrap: [AppComponent]
 })

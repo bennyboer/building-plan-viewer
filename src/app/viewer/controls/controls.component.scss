@@ -1,17 +1,25 @@
-:host {
+.box {
 	display: inline-flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
+	align-items: center;
 
 	padding: 5px;
 	border-radius: 5px;
-	background-color: white;
 	box-shadow: 0 0 1.0em rgba(0.0, 0.0, 0.0, 0.3);
 }
 
-button {
+.button {
 	height: 50px;
 	width: 50px;
 	font-size: 30px;
-	color: #666666;
 }
+
+@mixin controls-component-theme($theme) {
+	$background: map-get($theme, background);
+
+	.box {
+		background-color: mat-color($background, dialog);
+	}
+}
+

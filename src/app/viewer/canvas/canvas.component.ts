@@ -51,6 +51,7 @@ export class CanvasComponent implements OnDestroy {
 	 */
 	private readonly renderer: WebGLRenderer = new WebGLRenderer({
 		antialias: true,
+		alpha: true
 	});
 
 	/**
@@ -140,7 +141,6 @@ export class CanvasComponent implements OnDestroy {
 			elementBounds.width,
 			elementBounds.height,
 		);
-		this.renderer.setClearColor(0xfffffff, 1);
 
 		this.ngRenderer.appendChild(this.element.nativeElement, this.renderer.domElement);
 	}

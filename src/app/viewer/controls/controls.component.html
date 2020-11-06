@@ -1,6 +1,13 @@
-<button mat-icon-button matTooltip="Load a file" (click)="onLoadClicked()">
-	<mat-icon inline="true">publish</mat-icon>
-</button>
-<button mat-icon-button matTooltip="Export" (click)="onExportClicked()">
-	<mat-icon inline="true">save</mat-icon>
-</button>
+<div class="box">
+	<button class="button" mat-icon-button matTooltip="Load a file" (click)="onLoadClicked()">
+		<mat-icon inline="true">publish</mat-icon>
+	</button>
+	<button class="button" mat-icon-button matTooltip="Export" (click)="onExportClicked()">
+		<mat-icon inline="true">save</mat-icon>
+	</button>
+	<mat-slide-toggle style="margin-left: 10px;"
+					  [checked]="isDarkMode"
+					  (change)="onThemeChange($event)">
+		<mat-icon inline="true">nights_stay</mat-icon>
+	</mat-slide-toggle>
+</div>
