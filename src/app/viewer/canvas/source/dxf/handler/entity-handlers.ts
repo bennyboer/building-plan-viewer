@@ -4,6 +4,14 @@ import {LWPolylineHandler} from "./lw-polyline-handler";
 import {ArcHandler} from "./arc-handler";
 import {LineHandler} from "./line-handler";
 import {MTextHandler} from "./mtext-handler";
+import {SolidHandler} from "./solid-handler";
+import {InsertHandler} from "./insert-handler";
+import {PointHandler} from "./point-handler";
+import {SplineHandler} from "./spline-handler";
+import {EllipseHandler} from "./ellipse-handler";
+import {ThreeDFaceHandler} from "./threedface-handler";
+import {PolylineHandler} from "./polyline-handler";
+import {VertexHandler} from "./vertex-handler";
 
 /**
  * Collection of available entity handlers.
@@ -19,6 +27,14 @@ export class EntityHandlers {
 		[ArcHandler.TYPE, new ArcHandler()],
 		[LineHandler.TYPE, new LineHandler()],
 		[MTextHandler.TYPE, new MTextHandler()],
+		[SolidHandler.TYPE, new SolidHandler()],
+		[InsertHandler.TYPE, new InsertHandler()],
+		[PointHandler.TYPE, new PointHandler()],
+		[VertexHandler.TYPE, new VertexHandler()],
+		[SplineHandler.TYPE, new SplineHandler()],
+		[EllipseHandler.TYPE, new EllipseHandler()],
+		[ThreeDFaceHandler.TYPE, new ThreeDFaceHandler()],
+		[PolylineHandler.TYPE, new PolylineHandler()],
 	]);
 
 	/**

@@ -361,11 +361,20 @@ export class CanvasComponent implements OnDestroy, OnInit {
 
 		// Transform viewport size with preferred aspect ratio
 		const currentAspectRatio: number = viewport.width / viewport.height;
+		console.log(viewport);
+		console.log(currentAspectRatio + " vs " + aspectRatio);
 		if (currentAspectRatio < aspectRatio) {
-			viewport.width = viewport.height * aspectRatio;
+			const newWidth: number = viewport.height * aspectRatio;
+
+			viewport.left -= (newWidth - viewport.width) / 2;
+			viewport.width = newWidth;
 		} else if (currentAspectRatio > aspectRatio) {
-			viewport.height = viewport.width / aspectRatio;
+			const newHeight: number = viewport.width / aspectRatio;
+
+			viewport.top -= (newHeight - viewport.height) / 2;
+			viewport.height = newHeight;
 		}
+		console.log(viewport);
 
 		return viewport;
 	}

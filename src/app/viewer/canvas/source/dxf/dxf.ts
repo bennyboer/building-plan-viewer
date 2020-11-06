@@ -23,6 +23,11 @@ export interface Dxf {
 	 */
 	tables: DxfTables;
 
+	/**
+	 * Lookup of blocks by their name.
+	 */
+	blocksByName?: Map<string, DxfBlock>;
+
 }
 
 /**
@@ -142,6 +147,16 @@ export interface DxfPolylineEntity extends DxfEntity {
 	 * Thickness of the line.
 	 */
 	thickness?: number;
+
+}
+
+/**
+ * Polyline entity.
+ */
+export interface PolylineEntity extends DxfLWPolylineEntity {
+
+	polyfaceMesh: boolean;
+	polygonMesh: boolean;
 
 }
 
@@ -293,6 +308,130 @@ export interface DxfInsertEntity extends DxfEntity, DxfPosition {
 }
 
 /**
+ * A Spline entity.
+ */
+export interface DxfSplineEntity extends DxfEntity, DxfPosition {
+
+	/**
+	 * Control points of the spline.
+	 */
+	controlPoints: DxfPosition[];
+
+	/**
+	 * Knots.
+	 */
+	knots: number[];
+
+	/**
+	 * Knot tolerance.
+	 */
+	knotTolerance: number;
+
+	/**
+	 * Control point tolerance.
+	 */
+	controlPointTolerance: number;
+
+	/**
+	 * Fit tolerance.
+	 */
+	fitTolerance: number;
+
+	/**
+	 * Spline flags:
+	 * 1: closed spline
+	 * 2: periodic spline
+	 * 4: rational spline
+	 * 8: planar spline
+	 * 16: linear spline
+	 */
+	flag: number;
+
+	/**
+	 * Whether the spline is closed.
+	 */
+	closed: boolean;
+
+	/**
+	 * Spline degree.
+	 */
+	degree: number;
+
+	/**
+	 * Amount of knots.
+	 */
+	numberOfKnots: number;
+
+	/**
+	 * Amount of control points.
+	 */
+	numberOfControlPoints: number;
+
+	/**
+	 * Amount of fit points.
+	 */
+	numberOfFitPoints: number;
+
+}
+
+/**
+ * A Point entity.
+ */
+export interface DxfPointEntity extends DxfEntity, DxfPosition {
+
+	/**
+	 * Thickness of the point.
+	 */
+	thickness?: number;
+
+}
+
+/**
+ * A Solid entity.
+ */
+export interface DxfSolidEntity extends DxfEntity {
+
+	/**
+	 * Corners of the solid.
+	 */
+	corners: DxfPosition[];
+
+	/**
+	 * Thickness of the solid.
+	 */
+	thickness?: number;
+
+}
+
+/**
+ * An Ellipse entity.
+ */
+export interface DxfEllipseEntity extends DxfEntity, DxfPosition {
+
+	majorX: number;
+	majorY: number;
+	majorZ: number;
+
+	axisRatio: number;
+
+	startAngle: number;
+	endAngle: number;
+
+}
+
+/**
+ * An 3DFace entity.
+ */
+export interface Dxf3DFaceEntity extends DxfEntity {
+
+	/**
+	 * Vertices of the entity.
+	 */
+	vertices: DxfPosition[];
+
+}
+
+/**
  * Block of the DXF object.
  */
 export interface DxfBlock extends DxfPosition {
@@ -306,6 +445,11 @@ export interface DxfBlock extends DxfPosition {
 	 * X-ref.
 	 */
 	xref: string;
+
+	/**
+	 * Entities in the block.
+	 */
+	entities: DxfEntity[];
 
 }
 

@@ -99,34 +99,34 @@ export class DxfCanvasSource implements CanvasSource {
 	private updateBounds(object: Object3D) {
 		const bounds: Box3 = new Box3().setFromObject(object);
 
-		if (!!bounds.min.x) {
+		if (bounds.min.x !== undefined && bounds.min.x !== null) {
 			if (!this.bounds.x.min || this.bounds.x.min > bounds.min.x) {
 				this.bounds.x.min = bounds.min.x;
 			}
 		}
-		if (!!bounds.max.x) {
+		if (bounds.max.x !== undefined && bounds.max.x !== null) {
 			if (!this.bounds.x.max || this.bounds.x.max < bounds.max.x) {
 				this.bounds.x.max = bounds.max.x;
 			}
 		}
 
-		if (!!bounds.min.y) {
+		if (bounds.min.y !== undefined && bounds.min.y !== null) {
 			if (!this.bounds.y.min || this.bounds.y.min > bounds.min.y) {
 				this.bounds.y.min = bounds.min.y;
 			}
 		}
-		if (!!bounds.max.y) {
+		if (bounds.max.y !== undefined && bounds.max.y !== null) {
 			if (!this.bounds.y.max || this.bounds.y.max < bounds.max.y) {
 				this.bounds.y.max = bounds.max.y;
 			}
 		}
 
-		if (!!bounds.min.z) {
+		if (bounds.min.z !== undefined && bounds.min.z !== null) {
 			if (!this.bounds.z.min || this.bounds.z.min > bounds.min.z) {
 				this.bounds.z.min = bounds.min.z;
 			}
 		}
-		if (!!bounds.max.z) {
+		if (bounds.max.z !== undefined && bounds.max.z !== null) {
 			if (!this.bounds.z.max || this.bounds.z.max < bounds.max.z) {
 				this.bounds.z.max = bounds.max.z;
 			}
