@@ -136,7 +136,7 @@ export interface DxfPolylineEntity extends DxfEntity {
 	/**
 	 * Vertices of the entity.
 	 */
-	vertices: DxfPosition[];
+	vertices: DxfPolylineVertex[];
 
 	/**
 	 * Whether the polyline is closed.
@@ -168,7 +168,7 @@ export interface DxfLWPolylineEntity extends DxfEntity {
 	/**
 	 * Vertices of the entity.
 	 */
-	vertices: DxfPosition[];
+	vertices: DxfPolylineVertex[];
 
 	/**
 	 * Whether the line is closed.
@@ -179,6 +179,15 @@ export interface DxfLWPolylineEntity extends DxfEntity {
 	 * Thickness of the line.
 	 */
 	thickness?: number;
+
+}
+
+/**
+ * Vertex of polyline entities.
+ */
+export interface DxfPolylineVertex extends DxfPosition {
+
+	bulge: number;
 
 }
 
