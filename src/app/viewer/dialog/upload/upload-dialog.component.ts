@@ -90,7 +90,13 @@ export class UploadDialogComponent implements OnInit {
 				const supportedFileEndings = Array.from(CanvasSourceReaders.getSupportedFileEndings());
 				supportedFileEndings.sort();
 
-				this.snackBar.open(`The viewer currently supports only CAD files with the following file endings: ${supportedFileEndings.map(e => `*.${e}`).join(", ")}`);
+				this.snackBar.open(
+					`The viewer currently supports only CAD files with the following file endings: ${supportedFileEndings.map(e => `*.${e}`).join(", ")}`,
+					"OK",
+					{
+						duration: 5000,
+					}
+				);
 				return;
 			}
 

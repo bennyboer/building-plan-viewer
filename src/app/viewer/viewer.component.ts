@@ -176,6 +176,10 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	 * @param uploadResult to initialize
 	 */
 	private async showUploadDialogResult(uploadResult: UploadDialogResult): Promise<void> {
+		if (!uploadResult) {
+			return;
+		}
+
 		this.showPlaceholder = false;
 		this.cd.markForCheck();
 
