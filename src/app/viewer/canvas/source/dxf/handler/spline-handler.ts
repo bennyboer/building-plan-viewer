@@ -13,6 +13,7 @@ import {
 	Vector3
 } from "three";
 import {Curve} from "three/src/extras/core/Curve";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process Spline entities.
@@ -28,8 +29,9 @@ export class SplineHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: DxfSplineEntity = entity as DxfSplineEntity;
 
 		const curves: Curve<Vector2 | Vector3>[] = this.getCurves(e);

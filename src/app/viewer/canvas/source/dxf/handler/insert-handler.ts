@@ -3,6 +3,7 @@ import {Dxf, DxfBlock, DxfEntity, DxfInsertEntity} from "../dxf";
 import {Object3D} from "three";
 import {EntityHandler} from "./entity-handler";
 import {EntityHandlers} from "./entity-handlers";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process Insert entities.
@@ -18,8 +19,9 @@ export class InsertHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: DxfInsertEntity = entity as DxfInsertEntity;
 
 		const block: DxfBlock = dxf.blocksByName.get(e.block);
@@ -36,7 +38,7 @@ export class InsertHandler extends AbstractEntityHandler {
 					throw new Error(`Entity type '${entity.type}' is not supported`);
 				}
 
-				const object: Object3D = handler.process(entity, dxf);
+				const object: Object3D = handler.process(entity, dxf, src);
 
 				group.add(object);
 			}

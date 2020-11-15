@@ -1,6 +1,7 @@
 import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, Dxf3DFaceEntity, DxfEntity} from "../dxf";
 import {Face3, Geometry, Material, Mesh, MeshBasicMaterial, Object3D, Vector3} from "three";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process 3DFace entities.
@@ -16,8 +17,9 @@ export class ThreeDFaceHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: Dxf3DFaceEntity = entity as Dxf3DFaceEntity;
 
 		const geometry: Geometry = new Geometry();

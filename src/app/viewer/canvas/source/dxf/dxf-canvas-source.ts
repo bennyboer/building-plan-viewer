@@ -1,10 +1,11 @@
 import {CanvasSource} from "../canvas-source";
-import {Box3, Object3D, Scene} from "three";
-import {Dxf, DxfEntity} from "dxf";
+import {Box3, BufferGeometry, Object3D, Scene, Shape, ShapeBufferGeometry} from "three";
+import {Dxf, DxfEntity, DxfPosition} from "dxf";
 import {EntityHandler} from "./handler/entity-handler";
 import {EntityHandlers} from "./handler/entity-handlers";
 import {Bounds3D} from "../util/bounds";
 import {MTextHandler} from "./handler/mtext-handler";
+import {RoomMapping, Vertex} from "../../../dialog/upload/upload-dialog-result";
 
 /**
  * A canvas source read from DXF.
@@ -24,6 +25,12 @@ export class DxfCanvasSource implements CanvasSource {
 		y: {min: 0, max: 0},
 		z: {min: 0, max: 0},
 	};
+
+	/**
+	 * Map containing hashcodes for vertices that should be transformed in the
+	 * transformRoomMapping method.
+	 */
+	private readonly roomMappingVerticesToTransform: Map<number, RoomMappingTransformEntry> = new Map<number, RoomMappingTransformEntry>();
 
 	constructor(dxf: Dxf) {
 		this.dxf = dxf;
@@ -63,6 +70,117 @@ export class DxfCanvasSource implements CanvasSource {
 	}
 
 	/**
+	 * Transform the given room mapping.
+	 * This method gives the canvas source the opportunity to improve
+	 * or simply transform any room mapping.
+	 * For example for DXF when the room mapping points to a already painted polyline that
+	 * features bulges, the display is improved by returning the proper vertices that include
+	 * the bulges.
+	 *
+	 * @param mapping to transform.
+	 */
+	public transformRoomMapping(mapping: RoomMapping): BufferGeometry {
+		const vertices: DxfPosition[] = mapping.vertices;
+
+		// Calculate hash code for the vertices
+		const hashCode: number = DxfCanvasSource.calculateVerticesHashCode(vertices);
+
+		// Check if we have something to transform in the current mapping
+		const entry: RoomMappingTransformEntry = this.roomMappingVerticesToTransform.get(hashCode);
+		if (!!entry) {
+			return entry.transformed;
+		}
+
+		const shape: Shape = new Shape();
+		for (let i = 0; i < mapping.vertices.length; i++) {
+			const vertex: Vertex = mapping.vertices[i];
+
+			if (i == 0) {
+				shape.moveTo(vertex.x, vertex.y);
+			} else {
+				shape.lineTo(vertex.x, vertex.y);
+			}
+		}
+
+		return new ShapeBufferGeometry(shape);
+	}
+
+	/**
+	 * Add vertices that should be transformed later for room mappings.
+	 * See method transformRoomMapping.
+	 * @param vertices to transform later
+	 * @param transformed the transformed vertices
+	 */
+	public addVerticesToTransformForRoomMappings(vertices: DxfPosition[], transformed: BufferGeometry) {
+		this.roomMappingVerticesToTransform.set(
+			DxfCanvasSource.calculateVerticesHashCode(vertices),
+			{
+				vertices,
+				transformed
+			}
+		);
+	}
+
+	/**
+	 * Calculate a hash code for the given vertices.
+	 * @param vertices to calculate hash code for
+	 */
+	private static calculateVerticesHashCode(vertices: DxfPosition[]): number {
+		let hashCode: number = 1;
+
+		for (const vertex of vertices) {
+			hashCode = 31 * hashCode + DxfCanvasSource.calculateVertexHashCode(vertex);
+		}
+
+		return Math.round(hashCode);
+	}
+
+	/**
+	 * Calculate a hash code for the passed vertex.
+	 * @param vertex to calculate hash code for
+	 */
+	private static calculateVertexHashCode(vertex: DxfPosition): number {
+		let result: number = vertex.x;
+		result = 31 * result + vertex.y;
+		result = 31 * result + (vertex.z ?? 0);
+
+		return Math.round(result);
+	}
+
+	/**
+	 * Check whether the two passed vertex lists are equal.
+	 * @param v1 first vertex list
+	 * @param v2 second vertex list
+	 */
+	private static equalsVertices(v1: DxfPosition[], v2: DxfPosition[]): boolean {
+		if (v1.length !== v2.length) {
+			return false;
+		}
+
+		for (let i = 0; i < v1.length; i++) {
+			const vertex1: DxfPosition = v1[i];
+			const vertex2: DxfPosition = v2[i];
+
+			if (!DxfCanvasSource.equalsVertex(vertex1, vertex2)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check whether the two passed vertices are equal.
+	 * @param v1 first vertex
+	 * @param v2 second vertex
+	 */
+	private static equalsVertex(v1: DxfPosition, v2: DxfPosition): boolean {
+		return v1.x === v2.x
+			&& v1.y === v2.y
+			&& v1.z === v2.z;
+	}
+
+	/**
 	 * Draw the passed entity.
 	 * @param entity to draw
 	 * @param scene to draw onto
@@ -75,7 +193,7 @@ export class DxfCanvasSource implements CanvasSource {
 			throw new Error(`Entity type '${type}' is not supported`);
 		}
 
-		const object: Object3D = handler.process(entity, this.dxf);
+		const object: Object3D = handler.process(entity, this.dxf, this);
 		scene.add(object);
 
 		this.updateBounds(object);
@@ -132,5 +250,22 @@ export class DxfCanvasSource implements CanvasSource {
 			}
 		}
 	}
+
+}
+
+/**
+ * Entry to transform later for room mappings.
+ */
+interface RoomMappingTransformEntry {
+
+	/**
+	 * The vertices of the room mapping.
+	 */
+	vertices: DxfPosition[];
+
+	/**
+	 * The transformed vertices.
+	 */
+	transformed: BufferGeometry;
 
 }

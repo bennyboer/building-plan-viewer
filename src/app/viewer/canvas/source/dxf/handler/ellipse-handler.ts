@@ -1,6 +1,7 @@
 import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEllipseEntity, DxfEntity} from "../dxf";
 import {BufferGeometry, EllipseCurve, Line, LineBasicMaterial, Material, Object3D} from "three";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process Ellipse entities.
@@ -16,8 +17,9 @@ export class EllipseHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: DxfEllipseEntity = entity as DxfEllipseEntity;
 
 		const radiusX: number = Math.hypot(e.majorX, e.majorY);

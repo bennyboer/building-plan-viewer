@@ -1,6 +1,7 @@
 import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEntity, DxfLWPolylineEntity, DxfPolylineVertex} from "../dxf";
-import {BufferGeometry, Line, LineBasicMaterial, Material, Object3D, Path, Vector2} from "three";
+import {BufferGeometry, Line, LineBasicMaterial, Material, Object3D, Shape, ShapeBufferGeometry, Vector2} from "three";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process LWPolyline (lightweight polyline) entities.
@@ -16,8 +17,9 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: DxfLWPolylineEntity = entity as DxfLWPolylineEntity;
 
 		const vertices: DxfPolylineVertex[] = [...e.vertices];
@@ -25,8 +27,8 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 			vertices.push(e.vertices[0]);
 		}
 
-		const path: Path = new Path();
-
+		const shape: Shape = new Shape();
+		let containedBulge: boolean = false;
 		for (let i = 0; i < vertices.length; i++) {
 			const vertex: DxfPolylineVertex = vertices[i];
 			if (!!vertex.z) {
@@ -34,7 +36,7 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 			}
 
 			if (i === 0) {
-				path.moveTo(vertex.x, vertex.y);
+				shape.moveTo(vertex.x, vertex.y);
 			}
 
 			if (!!vertex.bulge && vertex.bulge !== 0 && i < vertices.length - 1) {
@@ -47,7 +49,7 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 					vertex.bulge
 				);
 
-				path.absarc(
+				shape.absarc(
 					data.center.x,
 					data.center.y,
 					data.radius,
@@ -55,20 +57,26 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 					data.endAngle,
 					vertex.bulge < 0
 				);
+
+				containedBulge = true;
 			} else {
-				path.lineTo(vertex.x, vertex.y);
+				shape.lineTo(vertex.x, vertex.y);
 			}
 		}
 
 		if (e.closed) {
-			path.closePath();
+			shape.closePath();
 		}
 
 		// TODO Support different line types (dashed, dotted, ...).
 
-		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(path.getPoints(32));
+		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(shape.getPoints(32));
 		const color: number = this.retrieveColor(entity, dxf);
 		const material: Material = new LineBasicMaterial({linewidth: e.thickness ?? 1, color: color});
+
+		if (containedBulge) {
+			src.addVerticesToTransformForRoomMappings(e.vertices, new ShapeBufferGeometry(shape));
+		}
 
 		return new Line(geometry, material);
 	}

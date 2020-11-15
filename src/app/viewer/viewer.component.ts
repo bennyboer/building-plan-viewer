@@ -12,7 +12,6 @@ import {
 import {ControlsComponent} from "./controls/controls.component";
 import {Subscription} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {CanvasSource} from "./canvas/source/canvas-source";
 import {LoadingDialogService} from "./dialog/loading/service/loading-dialog.service";
 import {CanvasComponent, LoadEvent} from "./canvas/canvas.component";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
@@ -73,9 +72,9 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	public placeHolderMessage: string = ViewerComponent.PLACEHOLDER_MESSAGE;
 
 	/**
-	 * Current canvas source to display in the viewer.
+	 * The last upload dialog result.
 	 */
-	public canvasSource: CanvasSource;
+	public lastUploadResult: UploadDialogResult;
 
 	/**
 	 * Subscription to load events from the canvas component.
@@ -189,12 +188,15 @@ export class ViewerComponent implements OnInit, OnDestroy {
 			this.loadEventSub = this.canvasComponent.loadEvents.subscribe((event) => this.onCanvasLoading(event));
 		}
 
-		this.canvasSource = uploadResult.canvasSource;
-		this.canvasComponent.source = uploadResult.canvasSource;
+		this.lastUploadResult = uploadResult;
 
 		if (!!uploadResult.roomMappings) {
-			this.canvasComponent.addRoomMappings(uploadResult.roomMappings);
+			this.canvasComponent.setRoomMappings(uploadResult.roomMappings);
+		} else {
+			this.canvasComponent.setRoomMappings(null);
 		}
+
+		this.canvasComponent.source = uploadResult.canvasSource;
 	}
 
 	/**

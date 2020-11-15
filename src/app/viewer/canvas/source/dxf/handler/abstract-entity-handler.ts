@@ -2,6 +2,7 @@ import {EntityHandler} from "./entity-handler";
 import {Object3D} from "three";
 import {Dxf, DxfEntity, DxfLayer} from "../dxf";
 import {DxfGlobals} from "../util/dxf-globals";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Abstract entity handler.
@@ -17,8 +18,9 @@ export abstract class AbstractEntityHandler implements EntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	abstract process(entity: DxfEntity, dxf: Dxf): Object3D;
+	abstract process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D;
 
 	/**
 	 * Retrieve a color from the passed entity and DXF.

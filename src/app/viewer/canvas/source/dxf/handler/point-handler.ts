@@ -1,6 +1,7 @@
 import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEntity, DxfPointEntity} from "../dxf";
 import {Geometry, Material, Object3D, Points, PointsMaterial, Vector3} from "three";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process Point entities.
@@ -16,8 +17,9 @@ export class PointHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: DxfPointEntity = entity as DxfPointEntity;
 
 		const geometry: Geometry = new Geometry();

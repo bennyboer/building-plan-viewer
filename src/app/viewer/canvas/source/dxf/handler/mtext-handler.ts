@@ -1,6 +1,7 @@
 import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEntity, DxfMTextEntity} from "../dxf";
 import {Box3, Font, FontLoader, Material, Mesh, MeshBasicMaterial, Object3D, TextGeometry} from "three";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process MText entities.
@@ -45,8 +46,9 @@ export class MTextHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: DxfMTextEntity = entity as DxfMTextEntity;
 
 		const geometry: TextGeometry = new TextGeometry(e.string, {

@@ -1,6 +1,7 @@
 import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEntity, DxfLineEntity} from "../dxf";
 import {Geometry, Line, LineBasicMaterial, Material, Object3D, Vector3} from "three";
+import {DxfCanvasSource} from "../dxf-canvas-source";
 
 /**
  * Handler being able to process Line entities.
@@ -16,8 +17,9 @@ export class LineHandler extends AbstractEntityHandler {
 	 * Process the passed entity.
 	 * @param entity to process
 	 * @param dxf the DXF format
+	 * @param src the canvas source object
 	 */
-	public process(entity: DxfEntity, dxf: Dxf): Object3D {
+	public process(entity: DxfEntity, dxf: Dxf, src: DxfCanvasSource): Object3D {
 		const e: DxfLineEntity = entity as DxfLineEntity;
 
 		const geometry: Geometry = new Geometry();
