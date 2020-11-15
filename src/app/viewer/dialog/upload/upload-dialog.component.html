@@ -1,0 +1,50 @@
+<h1 mat-dialog-title class="header">
+	Upload CAD-file
+	<button mat-icon-button (click)="onCancel()">
+		<mat-icon>close</mat-icon>
+	</button>
+</h1>
+
+<div mat-dialog-content>
+	<mat-vertical-stepper [linear]="true" #stepper>
+
+		<mat-step [stepControl]="uploadFormGroup" [editable]="false">
+			<form [formGroup]="uploadFormGroup">
+				<ng-template matStepLabel>Select a file to upload</ng-template>
+				<div style="display: flex; flex-direction: row; align-items: center">
+					<mat-form-field>
+						<mat-label>File</mat-label>
+						<input matInput formControlName="selectedFileCtrl">
+					</mat-form-field>
+					<button mat-button (click)="onSelectFile()">
+						<mat-icon matPrefix>publish</mat-icon>
+						Select...
+					</button>
+				</div>
+				<div>
+					<button mat-stroked-button (click)="onUpload()">Next</button>
+				</div>
+			</form>
+		</mat-step>
+
+		<mat-step [editable]="false">
+			<ng-template matStepLabel>Upload</ng-template>
+			<div style="display: flex; flex-flow: row; align-items: center; padding: 5px 0">
+				<span style="margin-right: 5px">
+					<mat-progress-spinner mode="indeterminate" [diameter]="30" [strokeWidth]="3"></mat-progress-spinner>
+				</span>
+				<span>Uploading the selected file: '{{ uploadFormGroup.controls.selectedFileCtrl.value }}'...</span>
+			</div>
+		</mat-step>
+
+		<mat-step [stepControl]="mappingFormGroup" [editable]="false" [optional]="true">
+			<form [formGroup]="mappingFormGroup">
+				<ng-template matStepLabel>Define a room mapping</ng-template>
+				<div>
+					<button mat-button (click)="onFinish()">Finish</button>
+				</div>
+			</form>
+		</mat-step>
+
+	</mat-vertical-stepper>
+</div>

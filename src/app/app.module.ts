@@ -14,11 +14,16 @@ import {CanvasComponent} from "./viewer/canvas/canvas.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {LoadingDialogComponent} from "./viewer/dialog/loading/component/loading-dialog.component";
 import {LoadingDialogService} from "./viewer/dialog/loading/service/loading-dialog.service";
-import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {LocalSettingsService} from "./util/settings/local-settings.service";
 import {ThemeService} from "./util/theme/theme.service";
+import {UploadDialogComponent} from "./viewer/dialog/upload/upload-dialog.component";
+import {MatStepperModule} from "@angular/material/stepper";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -27,7 +32,11 @@ const materialModules: any[] = [
 	MatSnackBarModule,
 	MatDialogModule,
 	MatProgressBarModule,
-	MatSlideToggleModule
+	MatSlideToggleModule,
+	MatStepperModule,
+	MatProgressSpinnerModule,
+	MatFormFieldModule,
+	MatInputModule
 ];
 
 @NgModule({
@@ -36,12 +45,14 @@ const materialModules: any[] = [
 		ViewerComponent,
 		ControlsComponent,
 		CanvasComponent,
-		LoadingDialogComponent
+		LoadingDialogComponent,
+		UploadDialogComponent
 	],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,
 		BrowserAnimationsModule,
+		ReactiveFormsModule,
 		...materialModules
 	],
 	providers: [

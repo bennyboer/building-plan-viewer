@@ -15,6 +15,11 @@ export class CanvasSourceReaders {
 	]);
 
 	/**
+	 * A list of supported file endings.
+	 */
+	private static SUPPORTED_FILE_ENDINGS: Set<string>;
+
+	/**
 	 * Get a reader for the passed file.
 	 * @param file to get reader for
 	 */
@@ -23,6 +28,22 @@ export class CanvasSourceReaders {
 		const ending: string = FileUtil.getFileEnding(file);
 
 		return this.READERS.get(ending.toLowerCase());
+	}
+
+	/**
+	 * Get a list of supported file endings.
+	 */
+	public static getSupportedFileEndings(): Set<string> {
+		if (!!CanvasSourceReaders.SUPPORTED_FILE_ENDINGS) {
+			return CanvasSourceReaders.SUPPORTED_FILE_ENDINGS;
+		}
+
+		CanvasSourceReaders.SUPPORTED_FILE_ENDINGS = new Set<string>();
+		for (const key of CanvasSourceReaders.READERS.keys()) {
+			CanvasSourceReaders.SUPPORTED_FILE_ENDINGS.add(key);
+		}
+
+		return CanvasSourceReaders.SUPPORTED_FILE_ENDINGS;
 	}
 
 }

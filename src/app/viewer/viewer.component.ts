@@ -11,13 +11,14 @@ import {
 } from "@angular/core";
 import {ControlsComponent} from "./controls/controls.component";
 import {Subscription} from "rxjs";
-import {FileUtil} from "../util/file-util";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {CanvasSourceReaders} from "./canvas/source/canvas-source-readers";
-import {CanvasSourceReader} from "./canvas/source/canvas-source-reader";
 import {CanvasSource} from "./canvas/source/canvas-source";
 import {LoadingDialogService} from "./dialog/loading/service/loading-dialog.service";
 import {CanvasComponent, LoadEvent} from "./canvas/canvas.component";
+import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {UploadDialogComponent} from "./dialog/upload/upload-dialog.component";
+import {UploadDialogResult} from "./dialog/upload/upload-dialog-result";
+import {UploadDialogData} from "./dialog/upload/upload-dialog-data";
 
 /**
  * Viewer component displaying the building plan, etc.
@@ -33,7 +34,7 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	/**
 	 * Message shown as placeholder when no file has been loaded.
 	 */
-	private static readonly PLACEHOLDER_MESSAGE = "Please select a CAD file to load";
+	private static readonly PLACEHOLDER_MESSAGE = "Please upload a CAD file to view";
 
 	/**
 	 * Message shown when a file is dragged over the viewer component.
@@ -102,7 +103,8 @@ export class ViewerComponent implements OnInit, OnDestroy {
 		private readonly element: ElementRef,
 		private readonly zone: NgZone,
 		private readonly snackBar: MatSnackBar,
-		private readonly loadingDialogService: LoadingDialogService
+		private readonly loadingDialogService: LoadingDialogService,
+		private readonly dialog: MatDialog
 	) {
 	}
 
@@ -141,12 +143,25 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	 * Called when a load event arrives from the controls component.
 	 */
 	public async onLoad(): Promise<void> {
-		const file: File = await ViewerComponent.openFileChooser();
-		if (file.name.endsWith(".dxf")) {
-			this.showCADFile(file);
-		} else {
-			this.snackBar.open(`The viewer currently supports only DXF CAD files with the file ending '*.dxf'`);
-		}
+		const result: UploadDialogResult = await this.uploadFile();
+
+		this.showUploadDialogResult(result);
+	}
+
+	/**
+	 * Let the user upload a file.
+	 * @param file to prefill upload dialog with
+	 */
+	public async uploadFile(file?: File): Promise<UploadDialogResult> {
+		const dialogRef: MatDialogRef<UploadDialogComponent> = this.dialog.open(UploadDialogComponent, {
+			hasBackdrop: true,
+			disableClose: true,
+			data: {
+				file
+			} as UploadDialogData
+		});
+
+		return await dialogRef.afterClosed().toPromise();
 	}
 
 	/**
@@ -157,24 +172,12 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	}
 
 	/**
-	 * Open the file chooser dialog and return the chosen file.
+	 * Show the passed upload dialog result.
+	 * @param uploadResult to initialize
 	 */
-	private static async openFileChooser(): Promise<File> {
-		return (await FileUtil.openFileChooser())[0];
-	}
-
-	/**
-	 * Show the passed CAD file
-	 * @param file to initialize
-	 */
-	private async showCADFile(file: File): Promise<void> {
+	private async showUploadDialogResult(uploadResult: UploadDialogResult): Promise<void> {
 		this.showPlaceholder = false;
 		this.cd.markForCheck();
-
-		const reader: CanvasSourceReader = CanvasSourceReaders.getReader(file);
-		if (!reader) {
-			throw new Error(`File with extension '${FileUtil.getFileEnding(file)}' is unsupported`);
-		}
 
 		this.loadingDialogService.open({message: "Loading file...", progress: 0});
 
@@ -182,8 +185,8 @@ export class ViewerComponent implements OnInit, OnDestroy {
 			this.loadEventSub = this.canvasComponent.loadEvents.subscribe((event) => this.onCanvasLoading(event));
 		}
 
-		this.canvasSource = await reader.read(file);
-		this.canvasComponent.source = this.canvasSource;
+		this.canvasSource = uploadResult.canvasSource;
+		this.canvasComponent.source = uploadResult.canvasSource;
 	}
 
 	/**
@@ -238,7 +241,7 @@ export class ViewerComponent implements OnInit, OnDestroy {
 		if (!!event.dataTransfer && !!event.dataTransfer.files && event.dataTransfer.files.length >= 1) {
 			const file: File = event.dataTransfer.files[0];
 
-			this.showCADFile(file);
+			this.uploadFile(file).then(result => this.showUploadDialogResult(result));
 		}
 	}
 

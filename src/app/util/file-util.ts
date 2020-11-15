@@ -25,9 +25,10 @@ export class FileUtil {
 
 	/**
 	 * Open a file chooser dialog and return the selected files.
+	 * @params supportedFileEndings a list of supported file endings
 	 */
-	public static async openFileChooser(): Promise<FileList> {
-		const input: HTMLInputElement = this.createDummyFileInput();
+	public static async openFileChooser(supportedFileEndings?: string[]): Promise<FileList> {
+		const input: HTMLInputElement = this.createDummyFileInput(supportedFileEndings);
 		input.click();
 
 		const files: FileList = await new Promise<FileList>(
@@ -62,13 +63,18 @@ export class FileUtil {
 
 	/**
 	 * Create a dummy file input element in DOM and return a reference to it.
+	 * @param supportedFileEndings a list of supported file endings
 	 */
-	private static createDummyFileInput(): HTMLInputElement {
+	private static createDummyFileInput(supportedFileEndings?: string[]): HTMLInputElement {
 		const input: HTMLInputElement = document.createElement("input");
 		input.setAttribute("type", "file");
 		input.style.visibility = "hidden";
 		input.style.position = "absolute";
 		input.style.left = "-9999px";
+
+		if (!!supportedFileEndings) {
+			input.accept = supportedFileEndings.join(",");
+		}
 
 		// Add it to body
 		const body: HTMLBodyElement = document.querySelector("body");

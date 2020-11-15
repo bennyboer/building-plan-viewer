@@ -261,7 +261,9 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	public set source(value: CanvasSource) {
 		this._source = value;
 
-		this.onUpdated(true);
+		if (!!this._source) {
+			this.onUpdated(true);
+		}
 	}
 
 	/**
