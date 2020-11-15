@@ -12,7 +12,7 @@
 			<form [formGroup]="uploadFormGroup">
 				<ng-template matStepLabel>Select a file to upload</ng-template>
 				<div style="display: flex; flex-direction: row; align-items: center">
-					<mat-form-field>
+					<mat-form-field style="width: 250px">
 						<mat-label>File</mat-label>
 						<input matInput formControlName="selectedFileCtrl">
 					</mat-form-field>
@@ -39,9 +39,60 @@
 
 		<mat-step [stepControl]="mappingFormGroup" [editable]="false" [optional]="true">
 			<form [formGroup]="mappingFormGroup">
-				<ng-template matStepLabel>Define a room mapping</ng-template>
-				<div>
-					<button mat-button (click)="onFinish()">Finish</button>
+				<ng-template matStepLabel>Define an entity mapping</ng-template>
+				<div style="display: flex; flex-direction: row; align-items: center">
+					<mat-form-field style="width: 250px">
+						<mat-label>File</mat-label>
+						<input matInput formControlName="selectedFileCtrl">
+					</mat-form-field>
+					<button mat-button (click)="onSelectCSVFile()">
+						<mat-icon matPrefix>publish</mat-icon>
+						Select...
+					</button>
+				</div>
+				<mat-accordion>
+					<mat-expansion-panel hideToggle>
+						<mat-expansion-panel-header>
+							<mat-panel-title>
+								CSV settings
+							</mat-panel-title>
+						</mat-expansion-panel-header>
+
+						<mat-form-field style="width: 100%">
+							<mat-label>Delimiter</mat-label>
+							<input matInput formControlName="delimiter">
+						</mat-form-field>
+					</mat-expansion-panel>
+					<mat-expansion-panel hideToggle>
+						<mat-expansion-panel-header>
+							<mat-panel-title>
+								Column header mappings
+							</mat-panel-title>
+						</mat-expansion-panel-header>
+
+						<div>
+							<mat-form-field style="width: 100%">
+								<mat-label>Room name</mat-label>
+								<input matInput formControlName="roomNameHeader">
+							</mat-form-field>
+						</div>
+						<div>
+							<mat-form-field style="width: 100%">
+								<mat-label>Category</mat-label>
+								<input matInput formControlName="categoryHeader">
+							</mat-form-field>
+						</div>
+						<div>
+							<mat-form-field style="width: 100%">
+								<mat-label>Polygon list</mat-label>
+								<input matInput formControlName="polygonListHeader">
+							</mat-form-field>
+						</div>
+
+					</mat-expansion-panel>
+				</mat-accordion>
+				<div style="margin-top: 10px; text-align: center">
+					<button mat-stroked-button (click)="onFinish()">Finish</button>
 				</div>
 			</form>
 		</mat-step>

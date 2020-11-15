@@ -21,9 +21,11 @@ import {ThemeService} from "./util/theme/theme.service";
 import {UploadDialogComponent} from "./viewer/dialog/upload/upload-dialog.component";
 import {MatStepperModule} from "@angular/material/stepper";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {ReactiveFormsModule} from "@angular/forms";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
+import {NgxCsvParserModule} from "ngx-csv-parser";
+import {MatExpansionModule} from "@angular/material/expansion";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -36,7 +38,8 @@ const materialModules: any[] = [
 	MatStepperModule,
 	MatProgressSpinnerModule,
 	MatFormFieldModule,
-	MatInputModule
+	MatInputModule,
+	MatExpansionModule
 ];
 
 @NgModule({
@@ -53,7 +56,8 @@ const materialModules: any[] = [
 		AppRoutingModule,
 		BrowserAnimationsModule,
 		ReactiveFormsModule,
-		...materialModules
+		...materialModules,
+		NgxCsvParserModule
 	],
 	providers: [
 		LoadingDialogService,

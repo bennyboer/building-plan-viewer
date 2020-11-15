@@ -7,8 +7,10 @@ import {CanvasSourceReaders} from "../../canvas/source/canvas-source-readers";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {CanvasSource} from "../../canvas/source/canvas-source";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {UploadDialogResult} from "./upload-dialog-result";
+import {Polygon, RoomMapping, UploadDialogResult} from "./upload-dialog-result";
 import {UploadDialogData} from "./upload-dialog-data";
+import {NgxCsvParser, NgxCSVParserError} from "ngx-csv-parser";
+import {first} from "rxjs/operators";
 
 /**
  * Dialog component for uploading a CAD file.
@@ -47,11 +49,17 @@ export class UploadDialogComponent implements OnInit {
 	 */
 	private canvasSource: CanvasSource;
 
+	/**
+	 * Selected CSV file to upload.
+	 */
+	private selectedCSVFile: File;
+
 	constructor(
 		private readonly formBuilder: FormBuilder,
 		private readonly snackBar: MatSnackBar,
 		private readonly dialogRef: MatDialogRef<UploadDialogComponent>,
-		@Inject(MAT_DIALOG_DATA) private readonly data: UploadDialogData
+		@Inject(MAT_DIALOG_DATA) private readonly data: UploadDialogData,
+		private readonly csvParser: NgxCsvParser
 	) {
 		this.selectedFile = data.file;
 	}
@@ -64,7 +72,11 @@ export class UploadDialogComponent implements OnInit {
 			selectedFileCtrl: [{value: !!this.selectedFile ? this.selectedFile.name : "", disabled: true}, Validators.required]
 		});
 		this.mappingFormGroup = this.formBuilder.group({
-			secondCtrl: ["", Validators.required]
+			selectedFileCtrl: [{value: "", disabled: true}, Validators.required],
+			delimiter: [",", Validators.required],
+			roomNameHeader: ["RoomNumber", Validators.required],
+			categoryHeader: ["Cluster", Validators.required],
+			polygonListHeader: ["Polygon", Validators.required],
 		});
 	}
 
@@ -78,6 +90,16 @@ export class UploadDialogComponent implements OnInit {
 
 		this.selectedFile = file;
 		this.uploadFormGroup.setValue({selectedFileCtrl: file.name});
+	}
+
+	/**
+	 * Called when a csv file should be selected.
+	 */
+	public async onSelectCSVFile(): Promise<void> {
+		const file = (await FileUtil.openFileChooser([".csv"]))[0];
+
+		this.selectedCSVFile = file;
+		this.mappingFormGroup.controls.selectedFileCtrl.setValue(file.name);
 	}
 
 	/**
@@ -121,11 +143,77 @@ export class UploadDialogComponent implements OnInit {
 	}
 
 	/**
+	 * Read the mapping from the selected CSV file.
+	 * @param delimiter to use for parsing
+	 * @param roomNameHeader header name of the room name CSV header
+	 * @param categoryHeader header name of the category CSV header
+	 * @param polygonListHeader header name of the polygon list CSV header
+	 */
+	private async readMappingFromCSV(
+		delimiter: string,
+		roomNameHeader: string,
+		categoryHeader: string,
+		polygonListHeader: string
+	): Promise<RoomMapping[]> {
+		const entries: any[] | NgxCSVParserError = await this.csvParser
+			.parse(this.selectedCSVFile, {delimiter, header: true})
+			.pipe(first())
+			.toPromise();
+
+		if (entries instanceof NgxCSVParserError) {
+			throw new Error("Could not parse the provided CSV");
+		} else {
+			// Map entries to room mapping entries.
+			const result: RoomMapping[] = [];
+			for (const entry of entries) {
+				// Parse polygon list
+				const polygons: Polygon[] = [];
+				let polygonStr: string = entry[polygonListHeader];
+				polygonStr = polygonStr.substring(1, polygonStr.length - 1);
+				const parts: string[] = polygonStr.split(",");
+
+				for (let i = 0; i < parts.length; i += 2) {
+					const first: string = parts[i].substring(1);
+					const second: string = parts[i + 1].substring(0, parts[i + 1].length - 1).trim();
+
+					polygons.push({
+						x: parseFloat(first),
+						y: parseFloat(second)
+					} as Polygon);
+				}
+
+				result.push({
+					roomName: entry[roomNameHeader],
+					category: entry[categoryHeader],
+					polygons: polygons
+				} as RoomMapping);
+			}
+
+			return result;
+		}
+	}
+
+	/**
 	 * Called on dialog finishing.
 	 */
 	public async onFinish(): Promise<void> {
+		if (!this.mappingFormGroup.valid) {
+			return;
+		}
+
+		let roomMappings: RoomMapping[];
+		if (!!this.selectedCSVFile) {
+			roomMappings = await this.readMappingFromCSV(
+				this.mappingFormGroup.controls.delimiter.value,
+				this.mappingFormGroup.controls.roomNameHeader.value,
+				this.mappingFormGroup.controls.categoryHeader.value,
+				this.mappingFormGroup.controls.polygonListHeader.value
+			);
+		}
+
 		this.dialogRef.close({
-			canvasSource: this.canvasSource
+			canvasSource: this.canvasSource,
+			roomMappings
 		} as UploadDialogResult);
 	}
 
