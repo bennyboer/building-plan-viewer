@@ -10,7 +10,19 @@ import {
 	Renderer2
 } from "@angular/core";
 import {CanvasSource} from "./source/canvas-source";
-import {Camera, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import {
+	BufferGeometry,
+	Camera,
+	Material,
+	Mesh,
+	MeshBasicMaterial,
+	OrthographicCamera,
+	PerspectiveCamera,
+	Scene,
+	Shape,
+	ShapeBufferGeometry,
+	WebGLRenderer
+} from "three";
 import {Bounds2D, Bounds3D, BoundsUtil} from "./source/util/bounds";
 import {ThemeService} from "../../util/theme/theme.service";
 import {Observable, Subject, Subscription} from "rxjs";
@@ -18,6 +30,7 @@ import {DxfGlobals} from "./source/dxf/util/dxf-globals";
 import {DeviceUtil} from "../../util/device-util";
 import {DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, UP_ARROW} from "@angular/cdk/keycodes";
 import {Point} from "@angular/cdk/drag-drop";
+import {RoomMapping, Vertex} from "../dialog/upload/upload-dialog-result";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -323,6 +336,34 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.lastBounds = bounds;
 
 		this.updateViewport(bounds, reset);
+	}
+
+	/**
+	 * Add the passed room mappings to the canvas.
+	 * @param mappings to add
+	 */
+	public addRoomMappings(mappings: RoomMapping[]): void {
+		for (const mapping of mappings) {
+			const shape: Shape = new Shape();
+
+			for (let i = 0; i < mapping.vertices.length; i++) {
+				const vertex: Vertex = mapping.vertices[i];
+
+				if (i == 0) {
+					shape.moveTo(vertex.x, vertex.y);
+				} else {
+					shape.lineTo(vertex.x, vertex.y);
+				}
+			}
+
+			const geometry: BufferGeometry = new ShapeBufferGeometry(shape);
+			const material: Material = new MeshBasicMaterial({color: 0xff0000});
+			this.scene.add(new Mesh(geometry, material));
+		}
+
+		if (this.initialized) {
+			this.repaint();
+		}
 	}
 
 	/**

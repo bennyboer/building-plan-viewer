@@ -7,7 +7,7 @@ import {CanvasSourceReaders} from "../../canvas/source/canvas-source-readers";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {CanvasSource} from "../../canvas/source/canvas-source";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {Polygon, RoomMapping, UploadDialogResult} from "./upload-dialog-result";
+import {RoomMapping, UploadDialogResult, Vertex} from "./upload-dialog-result";
 import {UploadDialogData} from "./upload-dialog-data";
 import {NgxCsvParser, NgxCSVParserError} from "ngx-csv-parser";
 import {first} from "rxjs/operators";
@@ -167,25 +167,25 @@ export class UploadDialogComponent implements OnInit {
 			const result: RoomMapping[] = [];
 			for (const entry of entries) {
 				// Parse polygon list
-				const polygons: Polygon[] = [];
+				const vertices: Vertex[] = [];
 				let polygonStr: string = entry[polygonListHeader];
 				polygonStr = polygonStr.substring(1, polygonStr.length - 1);
 				const parts: string[] = polygonStr.split(",");
 
 				for (let i = 0; i < parts.length; i += 2) {
-					const first: string = parts[i].substring(1);
+					const first: string = parts[i].trim().substring(1);
 					const second: string = parts[i + 1].substring(0, parts[i + 1].length - 1).trim();
 
-					polygons.push({
+					vertices.push({
 						x: parseFloat(first),
 						y: parseFloat(second)
-					} as Polygon);
+					} as Vertex);
 				}
 
 				result.push({
 					roomName: entry[roomNameHeader],
 					category: entry[categoryHeader],
-					polygons: polygons
+					vertices
 				} as RoomMapping);
 			}
 

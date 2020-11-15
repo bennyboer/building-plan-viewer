@@ -191,6 +191,10 @@ export class ViewerComponent implements OnInit, OnDestroy {
 
 		this.canvasSource = uploadResult.canvasSource;
 		this.canvasComponent.source = uploadResult.canvasSource;
+
+		if (!!uploadResult.roomMappings) {
+			this.canvasComponent.addRoomMappings(uploadResult.roomMappings);
+		}
 	}
 
 	/**

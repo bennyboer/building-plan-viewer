@@ -33,16 +33,16 @@ export interface RoomMapping {
 	category: number;
 
 	/**
-	 * List of polygons describing the room.
+	 * List of vertices describing the room.
 	 */
-	polygons: Polygon[];
+	vertices: Vertex[];
 
 }
 
 /**
  * A polygon representation.
  */
-export interface Polygon {
+export interface Vertex {
 
 	/**
 	 * X-coordinate of the polygon.
