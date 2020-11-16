@@ -10,7 +10,19 @@ import {
 	Renderer2
 } from "@angular/core";
 import {CanvasSource} from "./source/canvas-source";
-import {Camera, Material, Mesh, MeshBasicMaterial, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import {
+	Box3,
+	BufferGeometry,
+	Camera,
+	Material,
+	Mesh,
+	MeshBasicMaterial,
+	OrthographicCamera,
+	PerspectiveCamera,
+	Scene,
+	TextGeometry,
+	WebGLRenderer
+} from "three";
 import {Bounds2D, Bounds3D, BoundsUtil} from "./source/util/bounds";
 import {ThemeService} from "../../util/theme/theme.service";
 import {Observable, Subject, Subscription} from "rxjs";
@@ -19,6 +31,8 @@ import {DeviceUtil} from "../../util/device-util";
 import {DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, UP_ARROW} from "@angular/cdk/keycodes";
 import {Point} from "@angular/cdk/drag-drop";
 import {RoomMapping} from "../dialog/upload/upload-dialog-result";
+import {MTextHandler} from "./source/dxf/handler/mtext-handler";
+import colormap from "colormap";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -27,7 +41,7 @@ import {RoomMapping} from "../dialog/upload/upload-dialog-result";
 	selector: "app-canvas-component",
 	templateUrl: "canvas.component.html",
 	styleUrls: ["canvas.component.scss"],
-	changeDetection: ChangeDetectionStrategy.OnPush,
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CanvasComponent implements OnDestroy, OnInit {
 
@@ -237,11 +251,16 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 */
 	private roomMappings: RoomMapping[];
 
+	/**
+	 * Color map to use for room mappings.
+	 */
+	private colorMap: Map<number, number>;
+
 	constructor(
 		private readonly cd: ChangeDetectorRef,
 		private readonly element: ElementRef,
 		private readonly ngRenderer: Renderer2,
-		private readonly themeService: ThemeService,
+		private readonly themeService: ThemeService
 	) {
 	}
 
@@ -339,10 +358,43 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private initializeRoomMappings() {
 		if (!!this.roomMappings) {
 			for (const mapping of this.roomMappings) {
-				const material: Material = new MeshBasicMaterial({color: Math.random() * 0xffffff, transparent: true, opacity: 0.2});
-				this.scene.add(new Mesh(this._source.transformRoomMapping(mapping), material));
+				// Add mesh in room shape
+				const shapeMaterial: Material = new MeshBasicMaterial({
+					color: this.getMappingColor(mapping.category),
+					transparent: true,
+					opacity: 0.5
+				});
+				const shapeGeometry: BufferGeometry = this._source.transformRoomMapping(mapping);
+				const shapeMesh: Mesh = new Mesh(shapeGeometry, shapeMaterial);
+				const shapeBounds: Box3 = new Box3().setFromObject(shapeMesh);
+				this.scene.add(shapeMesh);
+
+				// Add room name
+				const textGeometry: TextGeometry = new TextGeometry(mapping.roomName, {
+					font: MTextHandler.font,
+					height: 0,
+					size: (shapeBounds.max.y - shapeBounds.min.y) / 25
+				});
+				const textMaterial: Material = new MeshBasicMaterial({color: DxfGlobals.getContrastColor()});
+				const textMesh: Mesh = new Mesh(textGeometry, textMaterial);
+
+				const textBounds: Box3 = new Box3().setFromObject(textMesh);
+
+				textMesh.position.x = shapeBounds.min.x + (shapeBounds.max.x - shapeBounds.min.x) / 2 - (textBounds.max.x - textBounds.min.x) / 2;
+				textMesh.position.y = shapeBounds.min.y + (shapeBounds.max.y - shapeBounds.min.y) / 2 - (textBounds.max.y - textBounds.min.y) / 2;
+				textMesh.position.z = 1;
+
+				this.scene.add(textMesh);
 			}
 		}
+	}
+
+	/**
+	 * The the correct color for the passed mapping category.
+	 * @param category to get color for
+	 */
+	private getMappingColor(category: number): number {
+		return this.colorMap.get(category);
 	}
 
 	/**
@@ -351,6 +403,33 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 */
 	public setRoomMappings(mappings: RoomMapping[]): void {
 		this.roomMappings = mappings;
+
+		this.colorMap = new Map<number, number>();
+		if (!!this.roomMappings) {
+			// Get amount of categories
+			const categories: Set<number> = new Set<number>();
+			for (const mapping of mappings) {
+				categories.add(mapping.category);
+			}
+
+			// Create color map based on the amount of categories
+			const hexColors: string[] = colormap({
+				colormap: "jet",
+				nshades: Math.max(6, categories.size),
+				format: "hex",
+				alpha: 1.0
+			});
+
+			const sortedCategories: number[] = Array.from(categories);
+			sortedCategories.sort();
+
+			let colorIndex: number = 0;
+			for (const category of sortedCategories) {
+				const color: number = parseInt(hexColors[colorIndex++].substring(1), 16);
+
+				this.colorMap.set(category, color);
+			}
+		}
 	}
 
 	/**
@@ -365,9 +444,11 @@ export class CanvasComponent implements OnDestroy, OnInit {
 			viewport.width / 2,
 			viewport.height / 2,
 			-viewport.height / 2,
+			0,
+			2000
 		);
 
-		cam.position.z = 1;
+		cam.position.z = 10;
 		this.camera = cam;
 
 		this.renderer.setSize(

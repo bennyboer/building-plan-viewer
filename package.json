@@ -21,6 +21,7 @@
 		"@angular/platform-browser": "~11.0.0",
 		"@angular/platform-browser-dynamic": "~11.0.0",
 		"@angular/router": "~11.0.0",
+		"colormap": "^2.3.1",
 		"dxf": "^4.4.2",
 		"rxjs": "~6.6.0",
 		"three": "^0.121.1",

@@ -31,7 +31,7 @@ export class MTextHandler extends AbstractEntityHandler {
 	/**
 	 * The font to use for three.js.
 	 */
-	private static font: Font;
+	public static font: Font;
 
 	/**
 	 * Initialize the handler.
