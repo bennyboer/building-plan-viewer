@@ -1,0 +1,18 @@
+plugins {
+	id 'base'
+	id 'com.github.node-gradle.node' version '2.2.4'
+}
+
+node {
+	version = '15.2.0'
+	download = true
+}
+
+task buildFrontend(type: NpmTask) {
+	description 'Build the client angular application'
+
+	it.inputs.files(fileTree("$projectDir").exclude('.gradle', '.idea', 'dist', 'node_modules'))
+	it.outputs.dir("$projectDir/dist/static")
+
+	args = ['run', 'build']
+}
