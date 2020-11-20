@@ -8,6 +8,7 @@
 // have to load a single css file for Angular Material in your app.
 
 @import 'app/viewer/controls/controls.component';
+@import 'app/viewer/canvas/canvas.component';
 
 // Fonts
 @import 'https://fonts.googleapis.com/css?family=Material+Icons';
@@ -221,6 +222,7 @@ $altTheme: mat-dark-theme($theme-primary, $theme-accent, $theme-warn);
 @mixin custom-theme($theme) {
 	@include angular-material-theme($theme);
 	@include controls-component-theme($theme);
+	@include canvas-component-theme($theme);
 }
 
 @include custom-theme($theme);

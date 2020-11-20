@@ -7,21 +7,25 @@ import {
 	Input,
 	OnDestroy,
 	OnInit,
-	Renderer2
+	Renderer2,
+	ViewChild
 } from "@angular/core";
 import {CanvasSource} from "./source/canvas-source";
 import {
 	Box3,
 	BufferGeometry,
 	Camera,
+	Intersection,
 	Material,
 	Mesh,
 	MeshBasicMaterial,
 	Object3D,
 	OrthographicCamera,
 	PerspectiveCamera,
+	Raycaster,
 	Scene,
 	TextGeometry,
+	Vector2,
 	WebGLRenderer
 } from "three";
 import {Bounds2D, Bounds3D, BoundsUtil} from "./source/util/bounds";
@@ -258,9 +262,36 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private roomMappingObjects: Object3D[];
 
 	/**
+	 * Objects that represent a highlighted room (for room mappings).
+	 */
+	private roomObjects: Object3D[];
+
+	/**
+	 * Mapping of room object (three.js) with the UUID of the object to
+	 * the actual room mapping data.
+	 */
+	private roomObjectMapping: Map<string, RoomMapping> = new Map<string, RoomMapping>();
+
+	/**
 	 * Color map to use for room mappings.
 	 */
 	private colorMap: Map<number, number>;
+
+	/**
+	 * Current tooltip to display.
+	 */
+	public tooltip: string | null;
+
+	/**
+	 * Whether the tooltip is currently shown.
+	 */
+	public isTooltipShown: boolean = false;
+
+	/**
+	 * Position of the tooltip.
+	 */
+	@ViewChild("tooltipElement")
+	public tooltipElement: ElementRef;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -291,6 +322,10 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	@Input("src")
 	public set source(value: CanvasSource) {
 		this._source = value;
+
+		this.roomMappings = null;
+		this.roomMappingObjects = null;
+		this.roomObjects = null;
 
 		if (!!this._source) {
 			this.onUpdated(true);
@@ -366,40 +401,54 @@ export class CanvasComponent implements OnDestroy, OnInit {
 			// Remove first from current scene
 			this.scene.remove.apply(this.scene, this.roomMappingObjects);
 			this.roomMappingObjects = null;
+			this.roomObjects = null;
 		}
 
+		this.roomObjectMapping.clear();
+
+		const textMaterial: Material = new MeshBasicMaterial({color: DxfGlobals.getContrastColor()});
+		const materials: Map<number, Material> = new Map<number, Material>();
 		if (!!this.roomMappings) {
 			this.roomMappingObjects = [];
+			this.roomObjects = [];
 			for (const mapping of this.roomMappings) {
 				// Add mesh in room shape
-				const shapeMaterial: Material = new MeshBasicMaterial({
-					color: this.getMappingColor(mapping.category),
-					transparent: true,
-					opacity: 0.5
-				});
-				const shapeGeometry: BufferGeometry = this._source.transformRoomMapping(mapping);
-				const shapeMesh: Mesh = new Mesh(shapeGeometry, shapeMaterial);
-				const shapeBounds: Box3 = new Box3().setFromObject(shapeMesh);
-				this.scene.add(shapeMesh);
-				this.roomMappingObjects.push(shapeMesh);
+				let shapeMaterial: Material = materials.get(mapping.category);
+				if (!shapeMaterial) {
+					shapeMaterial = new MeshBasicMaterial({
+						color: this.getMappingColor(mapping.category),
+						transparent: true,
+						opacity: 0.5
+					});
+					materials.set(mapping.category, shapeMaterial);
+				}
 
-				// Add room name
-				const textGeometry: TextGeometry = new TextGeometry(mapping.roomName, {
-					font: MTextHandler.font,
-					height: 0,
-					size: (shapeBounds.max.y - shapeBounds.min.y) / 25
-				});
-				const textMaterial: Material = new MeshBasicMaterial({color: DxfGlobals.getContrastColor()});
-				const textMesh: Mesh = new Mesh(textGeometry, textMaterial);
+				const shapeGeometry: BufferGeometry = this._source.mapToRoom(mapping, this.scene, this.camera);
+				if (!!shapeGeometry) {
+					const shapeMesh: Mesh = new Mesh(shapeGeometry, shapeMaterial);
+					const shapeBounds: Box3 = new Box3().setFromObject(shapeMesh);
+					this.scene.add(shapeMesh);
+					this.roomMappingObjects.push(shapeMesh);
+					this.roomObjects.push(shapeMesh);
+					this.roomObjectMapping.set(shapeMesh.uuid, mapping);
 
-				const textBounds: Box3 = new Box3().setFromObject(textMesh);
+					// Add room name
+					const textGeometry: TextGeometry = new TextGeometry(mapping.roomName, {
+						font: MTextHandler.font,
+						height: 0,
+						size: (shapeBounds.max.y - shapeBounds.min.y) / 25
+					});
+					const textMesh: Mesh = new Mesh(textGeometry, textMaterial);
 
-				textMesh.position.x = shapeBounds.min.x + (shapeBounds.max.x - shapeBounds.min.x) / 2 - (textBounds.max.x - textBounds.min.x) / 2;
-				textMesh.position.y = shapeBounds.min.y + (shapeBounds.max.y - shapeBounds.min.y) / 2 - (textBounds.max.y - textBounds.min.y) / 2;
-				textMesh.position.z = 1;
+					const textBounds: Box3 = new Box3().setFromObject(textMesh);
 
-				this.scene.add(textMesh);
-				this.roomMappingObjects.push(textMesh);
+					textMesh.position.x = shapeBounds.min.x + (shapeBounds.max.x - shapeBounds.min.x) / 2 - (textBounds.max.x - textBounds.min.x) / 2;
+					textMesh.position.y = shapeBounds.min.y + (shapeBounds.max.y - shapeBounds.min.y) / 2 - (textBounds.max.y - textBounds.min.y) / 2;
+					textMesh.position.z = 1;
+
+					this.scene.add(textMesh);
+					this.roomMappingObjects.push(textMesh);
+				}
 			}
 		}
 	}
@@ -885,6 +934,52 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 */
 	private onMouseMove(event: MouseEvent): void {
 		this.pan(event.clientX, event.clientY);
+
+		this.getObjectNearestToMouse(event.clientX, event.clientY);
+	}
+
+	/**
+	 * Get the room mapping object nearest to the given coordinates.
+	 * @param x coordinate of the mouse
+	 * @param y coordinate of the mouse
+	 */
+	private getObjectNearestToMouse(x: number, y: number): void {
+		if (!this.roomObjects) {
+			return;
+		}
+
+		const vector: Vector2 = new Vector2(
+			(x / this.renderer.domElement.width) * 2 - 1,
+			-(y / this.renderer.domElement.height) * 2 + 1
+		);
+		const ray: Raycaster = new Raycaster();
+		ray.setFromCamera(vector, this.camera);
+
+		const intersections: Intersection[] = ray.intersectObjects(this.roomObjects, false);
+		if (intersections.length > 0) {
+			const intersection: Intersection = intersections[0];
+
+			const mapping: RoomMapping = this.roomObjectMapping.get(intersection.object.uuid);
+			if (!!mapping && !!mapping.description && mapping.description.length > 0) {
+				if (!this.isTooltipShown) {
+					this.isTooltipShown = true;
+					this.tooltip = mapping.description;
+					this.cd.markForCheck();
+				}
+
+				this.ngRenderer.setStyle(this.tooltipElement.nativeElement, "left", `${x + 5}px`);
+				this.ngRenderer.setStyle(this.tooltipElement.nativeElement, "top", `${y + 5}px`);
+				this.ngRenderer.setStyle(this.tooltipElement.nativeElement, "display", `inline-block`);
+
+				return;
+			}
+		}
+
+		if (this.isTooltipShown) {
+			this.isTooltipShown = false;
+			this.ngRenderer.setStyle(this.tooltipElement.nativeElement, "display", `none`);
+			this.cd.markForCheck();
+		}
 	}
 
 	/**

@@ -2,6 +2,7 @@ import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfArcEntity, DxfEntity} from "../dxf";
 import {ArcCurve, BufferGeometry, Line, LineBasicMaterial, Material, Object3D} from "three";
 import {DxfCanvasSource} from "../dxf-canvas-source";
+import {DxfGlobals} from "../util/dxf-globals";
 
 /**
  * Handler being able to process Arc entities.
@@ -31,7 +32,7 @@ export class ArcHandler extends AbstractEntityHandler {
 			false,
 		);
 
-		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(arc.getPoints(32));
+		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(arc.getPoints(DxfGlobals.divisions));
 		const material: Material = new LineBasicMaterial({linewidth: e.thickness ?? 1, color: this.retrieveColor(entity, dxf)});
 
 		const result: Line = new Line(geometry, material);

@@ -1,7 +1,8 @@
 import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEntity, DxfLWPolylineEntity, DxfPolylineVertex} from "../dxf";
-import {BufferGeometry, Line, LineBasicMaterial, Material, Object3D, Shape, ShapeBufferGeometry, Vector2} from "three";
+import {BufferGeometry, Line, LineBasicMaterial, Material, MeshBasicMaterial, Object3D, Shape, ShapeBufferGeometry, Vector2} from "three";
 import {DxfCanvasSource} from "../dxf-canvas-source";
+import {DxfGlobals} from "../util/dxf-globals";
 
 /**
  * Handler being able to process LWPolyline (lightweight polyline) entities.
@@ -70,7 +71,7 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 
 		// TODO Support different line types (dashed, dotted, ...).
 
-		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(shape.getPoints(32));
+		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(shape.getPoints(DxfGlobals.divisions));
 		const color: number = this.retrieveColor(entity, dxf);
 		const material: Material = new LineBasicMaterial({linewidth: e.thickness ?? 1, color: color});
 
@@ -78,7 +79,10 @@ export class LWPolylineHandler extends AbstractEntityHandler {
 			src.addVerticesToTransformForRoomMappings(e.vertices, new ShapeBufferGeometry(shape));
 		}
 
-		return new Line(geometry, material);
+		const line: Line = new Line(geometry, material);
+		src.addMappingRoom(line, shape);
+
+		return line;
 	}
 
 	/**

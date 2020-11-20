@@ -116,7 +116,7 @@ export class RoomMappingUploadDialogComponent implements OnInit {
 			// Map entries to room mapping entries.
 			const result: RoomMapping[] = [];
 			for (const entry of entries) {
-				// Parse polygon list
+				// Parse polygon list (if any).
 				const vertices: Vertex[] = [];
 				let polygonStr: string = entry[polygonListHeader];
 				if (!!polygonStr) {
@@ -134,11 +134,25 @@ export class RoomMappingUploadDialogComponent implements OnInit {
 					}
 				}
 
+				// Parse mapping vertex (if any).
+				let mappingVertex: Vertex = null;
+				const mappingVertexStr: string = entry[mappingVertexHeader];
+				if (!!mappingVertexStr) {
+					const parts: string[] = mappingVertexStr.split(",");
+					const first: string = parts[0].trim().substring(1);
+					const second: string = parts[1].substring(0, parts[1].length - 1).trim();
+
+					mappingVertex = {
+						x: parseFloat(first),
+						y: parseFloat(second)
+					};
+				}
+
 				result.push({
 					roomName: entry[roomNameHeader],
 					category: entry[categoryHeader],
 					description: entry[descriptionHeader],
-					mappingVertex: entry[mappingVertexHeader],
+					mappingVertex: mappingVertex,
 					vertices
 				} as RoomMapping);
 			}

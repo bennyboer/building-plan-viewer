@@ -14,6 +14,7 @@ import {
 } from "three";
 import {Curve} from "three/src/extras/core/Curve";
 import {DxfCanvasSource} from "../dxf-canvas-source";
+import {DxfGlobals} from "../util/dxf-globals";
 
 /**
  * Handler being able to process Spline entities.
@@ -63,7 +64,7 @@ export class SplineHandler extends AbstractEntityHandler {
 		const result: Array<Vector2 | Vector3> = [];
 
 		for (const curve of curves) {
-			for (const p of curve.getPoints(32)) {
+			for (const p of curve.getPoints(DxfGlobals.divisions)) {
 				result.push(p);
 			}
 		}

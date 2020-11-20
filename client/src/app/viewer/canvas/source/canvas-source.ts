@@ -1,4 +1,4 @@
-import {BufferGeometry, Scene} from "three";
+import {BufferGeometry, Camera, Scene} from "three";
 import {Bounds3D} from "./util/bounds";
 import {RoomMapping} from "../../../service/room-mapping/room-mapping";
 
@@ -23,8 +23,10 @@ export interface CanvasSource {
 	 * features bulges, the display is improved by returning the proper vertices that include
 	 * the bulges.
 	 *
-	 * @param mapping to transform.
+	 * @param mapping to transform
+	 * @param scene of the canvas
+	 * @param camera of the canvas
 	 */
-	transformRoomMapping(mapping: RoomMapping): BufferGeometry;
+	mapToRoom(mapping: RoomMapping, scene: Scene, camera: Camera): BufferGeometry;
 
 }

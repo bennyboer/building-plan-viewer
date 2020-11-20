@@ -1,5 +1,5 @@
 import {CanvasSource} from "../canvas-source";
-import {Box3, BufferGeometry, Object3D, Scene, Shape, ShapeBufferGeometry} from "three";
+import {Box3, BufferGeometry, Camera, Intersection, Object3D, Raycaster, Scene, Shape, ShapeBufferGeometry, Vector3} from "three";
 import {Dxf, DxfEntity, DxfPosition} from "dxf";
 import {EntityHandler} from "./handler/entity-handler";
 import {EntityHandlers} from "./handler/entity-handlers";
@@ -28,6 +28,21 @@ export class DxfCanvasSource implements CanvasSource {
 	};
 
 	/**
+	 * All possible room objects we can map to.
+	 */
+	private possibleRoomObjects: Object3D[] = [];
+
+	/**
+	 * Shapes mapped by the object ids of the possibleRoomObjects.
+	 */
+	private possibleRoomObjectsShapes: Map<string, Shape> = new Map<string, Shape>();
+
+	/**
+	 * Raycaster used to lookup intersections in a Three.js scene.
+	 */
+	private readonly raycaster: Raycaster = new Raycaster();
+
+	/**
 	 * Map containing hashcodes for vertices that should be transformed in the
 	 * transformRoomMapping method.
 	 */
@@ -44,6 +59,9 @@ export class DxfCanvasSource implements CanvasSource {
 	 */
 	public async draw(scene: Scene, progressConsumer: (progress: number) => Promise<boolean>): Promise<Bounds3D> {
 		this.resetBounds();
+
+		this.possibleRoomObjects = [];
+		this.possibleRoomObjectsShapes.clear();
 
 		await MTextHandler.init();
 
@@ -67,7 +85,18 @@ export class DxfCanvasSource implements CanvasSource {
 			}
 		}
 
+		this.raycaster.params.Line.threshold = (this.bounds.x.max - this.bounds.x.min) / 100000;
+
 		return this.bounds;
+	}
+
+	/**
+	 * Calculate object size.
+	 * @param object to calculate size of
+	 */
+	private static calculateObjectSize(object: Object3D): number {
+		const bounds: Box3 = new Box3().setFromObject(object);
+		return (bounds.max.x - bounds.min.x) * (bounds.max.y - bounds.min.y);
 	}
 
 	/**
@@ -79,31 +108,64 @@ export class DxfCanvasSource implements CanvasSource {
 	 * the bulges.
 	 *
 	 * @param mapping to transform.
+	 * @param scene of the canvas
+	 * @param camera of the canvas
 	 */
-	public transformRoomMapping(mapping: RoomMapping): BufferGeometry {
-		const vertices: DxfPosition[] = mapping.vertices;
+	public mapToRoom(mapping: RoomMapping, scene: Scene, camera: Camera): BufferGeometry {
+		if (!!mapping.mappingVertex) {
+			let vector: Vector3 = new Vector3(mapping.mappingVertex.x, mapping.mappingVertex.y, 0);
+			vector = vector.project(camera);
 
-		// Calculate hash code for the vertices
-		const hashCode: number = DxfCanvasSource.calculateVerticesHashCode(vertices);
+			this.raycaster.setFromCamera(vector, camera);
 
-		// Check if we have something to transform in the current mapping
-		const entry: RoomMappingTransformEntry = this.roomMappingVerticesToTransform.get(hashCode);
-		if (!!entry) {
-			return entry.transformed;
-		}
+			const intersections: Intersection[] = this.raycaster.intersectObjects(this.possibleRoomObjects, true);
+			if (intersections.length > 0) {
+				let intersection: Intersection = intersections[0];
+				if (intersections.length > 1) {
+					// Take the smallest object that intersects to prevent getting the building boundaries
+					const distance: number = intersection.distance;
+					let minSize: number = DxfCanvasSource.calculateObjectSize(intersection.object);
+					for (const int of intersections) {
+						if (int.distance <= distance) {
+							const newSize: number = DxfCanvasSource.calculateObjectSize(intersection.object);
+							if (newSize < minSize) {
+								minSize = newSize;
+								intersection = int;
+							}
+						}
+					}
+				}
 
-		const shape: Shape = new Shape();
-		for (let i = 0; i < mapping.vertices.length; i++) {
-			const vertex: Vertex = mapping.vertices[i];
-
-			if (i == 0) {
-				shape.moveTo(vertex.x, vertex.y);
-			} else {
-				shape.lineTo(vertex.x, vertex.y);
+				const shape: Shape = this.possibleRoomObjectsShapes.get(intersection.object.uuid);
+				if (!!shape) {
+					return new ShapeBufferGeometry(shape);
+				}
 			}
-		}
+		} else if (!!mapping.vertices) {
+			const vertices: DxfPosition[] = mapping.vertices;
 
-		return new ShapeBufferGeometry(shape);
+			// Calculate hash code for the vertices
+			const hashCode: number = DxfCanvasSource.calculateVerticesHashCode(vertices);
+
+			// Check if we have something to transform in the current mapping
+			const entry: RoomMappingTransformEntry = this.roomMappingVerticesToTransform.get(hashCode);
+			if (!!entry) {
+				return entry.transformed;
+			}
+
+			const shape: Shape = new Shape();
+			for (let i = 0; i < mapping.vertices.length; i++) {
+				const vertex: Vertex = mapping.vertices[i];
+
+				if (i == 0) {
+					shape.moveTo(vertex.x, vertex.y);
+				} else {
+					shape.lineTo(vertex.x, vertex.y);
+				}
+			}
+
+			return new ShapeBufferGeometry(shape);
+		}
 	}
 
 	/**
@@ -209,6 +271,16 @@ export class DxfCanvasSource implements CanvasSource {
 			y: {min: null, max: null},
 			z: {min: null, max: null},
 		};
+	}
+
+	/**
+	 * Add a room object the user is able to map to.
+	 * @param roomObject that is mappable to
+	 * @param shape of the object
+	 */
+	public addMappingRoom(roomObject: Object3D, shape: Shape): void {
+		this.possibleRoomObjects.push(roomObject);
+		this.possibleRoomObjectsShapes.set(roomObject.uuid, shape);
 	}
 
 	/**

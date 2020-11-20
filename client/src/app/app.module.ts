@@ -33,6 +33,7 @@ import {OpenDialogComponent} from "./viewer/dialog/cad/open/open-dialog.componen
 import {UploadDialogComponent} from "./viewer/dialog/cad/upload/upload-dialog.component";
 import {RoomMappingUploadDialogComponent} from "./viewer/dialog/room-mapping/upload/room-mapping-upload-dialog.component";
 import {SelectRoomMappingDialogComponent} from "./viewer/dialog/room-mapping/select/select-room-mapping-dialog.component";
+import {MarkdownModule} from "ngx-markdown";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -69,7 +70,8 @@ const materialModules: any[] = [
 		BrowserAnimationsModule,
 		ReactiveFormsModule,
 		...materialModules,
-		NgxCsvParserModule
+		NgxCsvParserModule,
+		MarkdownModule.forRoot()
 	],
 	providers: [
 		LoadingDialogService,

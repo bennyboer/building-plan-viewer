@@ -14,6 +14,11 @@ export class DxfGlobals {
 	private static backgroundColor: number = 0xFFFFFF;
 
 	/**
+	 * Divisions used to interpolate shapes.
+	 */
+	private static _divisions: number = 16;
+
+	/**
 	 * Get the contrast color.
 	 */
 	public static getContrastColor(): number {
@@ -41,6 +46,21 @@ export class DxfGlobals {
 	 */
 	public static setBackgroundColor(color: number): void {
 		this.backgroundColor = color;
+	}
+
+	/**
+	 * Get divisions to use to interpolate shapes.
+	 */
+	static get divisions(): number {
+		return this._divisions;
+	}
+
+	/**
+	 * Set the divisions to use to interpolate shapes.
+	 * @param value to set
+	 */
+	static set divisions(value: number) {
+		this._divisions = value;
 	}
 
 }

@@ -2,6 +2,7 @@ import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEllipseEntity, DxfEntity} from "../dxf";
 import {BufferGeometry, EllipseCurve, Line, LineBasicMaterial, Material, Object3D} from "three";
 import {DxfCanvasSource} from "../dxf-canvas-source";
+import {DxfGlobals} from "../util/dxf-globals";
 
 /**
  * Handler being able to process Ellipse entities.
@@ -37,7 +38,7 @@ export class EllipseHandler extends AbstractEntityHandler {
 			rotation
 		);
 
-		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(ellipse.getPoints(32));
+		const geometry: BufferGeometry = new BufferGeometry().setFromPoints(ellipse.getPoints(DxfGlobals.divisions));
 		const material: Material = new LineBasicMaterial({linewidth: 1, color: this.retrieveColor(entity, dxf)});
 
 		return new Line(geometry, material);

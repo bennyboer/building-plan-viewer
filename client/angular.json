@@ -35,7 +35,9 @@
 							"src/styles.scss"
 						],
 						"scripts": [
-							"node_modules/dxf-parser/dist/dxf-parser.js"
+							"node_modules/dxf-parser/dist/dxf-parser.js",
+							"node_modules/marked/lib/marked.js",
+							"node_modules/emoji-toolkit/lib/js/joypixels.min.js"
 						]
 					},
 					"configurations": {
