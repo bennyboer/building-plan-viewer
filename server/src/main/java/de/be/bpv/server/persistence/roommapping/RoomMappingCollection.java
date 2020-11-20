@@ -2,7 +2,6 @@ package de.be.bpv.server.persistence.roommapping;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.lang.Nullable;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -33,8 +32,7 @@ public class RoomMappingCollection {
     /**
      * Name of the room mapping.
      */
-    @Column(nullable = true)
-    @Nullable
+    @Column(nullable = false)
     private String name;
 
     /**
@@ -83,7 +81,6 @@ public class RoomMappingCollection {
      *
      * @return name
      */
-    @Nullable
     public String getName() {
         return name;
     }
@@ -93,7 +90,7 @@ public class RoomMappingCollection {
      *
      * @param name to set
      */
-    public void setName(@Nullable String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

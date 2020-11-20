@@ -1,6 +1,6 @@
 import {BufferGeometry, Scene} from "three";
 import {Bounds3D} from "./util/bounds";
-import {RoomMapping} from "../../dialog/upload/upload-dialog-result";
+import {RoomMapping} from "../../../service/room-mapping/room-mapping";
 
 /**
  * Source digestible by the canvas component.

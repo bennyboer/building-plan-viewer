@@ -1,5 +1,6 @@
 package de.be.bpv.server.rest.roommapping;
 
+import de.be.bpv.server.persistence.roommapping.RoomMapping;
 import de.be.bpv.server.persistence.roommapping.RoomMappingCollection;
 import de.be.bpv.server.persistence.roommapping.RoomMappingRepository;
 import de.be.bpv.server.rest.roommapping.response.RoomMappingReference;
@@ -85,6 +86,10 @@ public class RoomMappingController {
      */
     @PostMapping
     public ResponseEntity<RoomMappingReference> create(@RequestBody RoomMappingCollection mapping) {
+        for (RoomMapping m : mapping.getMappings()) {
+            m.setCollection(mapping);
+        }
+
         mapping = roomMappingRepository.save(mapping);
 
         return ResponseEntity.created(

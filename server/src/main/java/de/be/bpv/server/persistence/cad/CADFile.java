@@ -1,6 +1,7 @@
 package de.be.bpv.server.persistence.cad;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.Column;
@@ -11,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import java.util.Date;
 
 /**
  * Entity as representation for a CAD file.
@@ -51,6 +53,13 @@ public class CADFile {
      */
     @Column(nullable = true)
     private String charsetName;
+
+    /**
+     * Timestamp of when the mapping was created.
+     */
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private Date createdTimestamp;
 
     /**
      * Get the ID of the CAD file.
@@ -142,6 +151,24 @@ public class CADFile {
      */
     public void setCharsetName(@Nullable String charsetName) {
         this.charsetName = charsetName;
+    }
+
+    /**
+     * Get the created timestamp.
+     *
+     * @return created timestamp
+     */
+    public Date getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    /**
+     * Set the created timestamp.
+     *
+     * @param createdTimestamp to set
+     */
+    public void setCreatedTimestamp(Date createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
     }
 
 }

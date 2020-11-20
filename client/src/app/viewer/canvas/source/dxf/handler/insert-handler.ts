@@ -2,8 +2,8 @@ import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfBlock, DxfEntity, DxfInsertEntity} from "../dxf";
 import {Object3D} from "three";
 import {EntityHandler} from "./entity-handler";
-import {EntityHandlers} from "./entity-handlers";
 import {DxfCanvasSource} from "../dxf-canvas-source";
+import {EntityHandlers} from "./entity-handlers";
 
 /**
  * Handler being able to process Insert entities.

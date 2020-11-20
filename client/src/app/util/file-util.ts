@@ -24,6 +24,26 @@ export class FileUtil {
 	}
 
 	/**
+	 * Convert the passed files contents to a base64 encoded string.
+	 * @param file to convert contents of
+	 */
+	public static async readFileBase64(file: File): Promise<string> {
+		const reader: FileReader = new FileReader();
+
+		const promise: Promise<string> = new Promise<string>(
+			resolve => {
+				reader.onload = (e) => {
+					resolve((e.target.result as string).split(",")[1]);
+				};
+			}
+		);
+
+		reader.readAsDataURL(file);
+
+		return await promise;
+	}
+
+	/**
 	 * Open a file chooser dialog and return the selected files.
 	 * @params supportedFileEndings a list of supported file endings
 	 */

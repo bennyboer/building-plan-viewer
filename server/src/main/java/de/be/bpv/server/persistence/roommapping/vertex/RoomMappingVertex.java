@@ -1,5 +1,6 @@
 package de.be.bpv.server.persistence.roommapping.vertex;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
@@ -11,11 +12,13 @@ public class RoomMappingVertex {
     /**
      * X-coordinate of the vertex.
      */
+    @Column(nullable = true)
     private double x;
 
     /**
      * Y-coordinate of the vertex.
      */
+    @Column(nullable = true)
     private double y;
 
     /**

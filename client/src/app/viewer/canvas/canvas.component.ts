@@ -17,6 +17,7 @@ import {
 	Material,
 	Mesh,
 	MeshBasicMaterial,
+	Object3D,
 	OrthographicCamera,
 	PerspectiveCamera,
 	Scene,
@@ -30,9 +31,9 @@ import {DxfGlobals} from "./source/dxf/util/dxf-globals";
 import {DeviceUtil} from "../../util/device-util";
 import {DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, UP_ARROW} from "@angular/cdk/keycodes";
 import {Point} from "@angular/cdk/drag-drop";
-import {RoomMapping} from "../dialog/upload/upload-dialog-result";
 import {MTextHandler} from "./source/dxf/handler/mtext-handler";
 import colormap from "colormap";
+import {RoomMapping} from "../../service/room-mapping/room-mapping";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -252,6 +253,11 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private roomMappings: RoomMapping[];
 
 	/**
+	 * Objects on the current scene from the current room mapping.
+	 */
+	private roomMappingObjects: Object3D[];
+
+	/**
 	 * Color map to use for room mappings.
 	 */
 	private colorMap: Map<number, number>;
@@ -356,7 +362,14 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 * Initialize the room mappings in the current scene.
 	 */
 	private initializeRoomMappings() {
+		if (!!this.roomMappingObjects) {
+			// Remove first from current scene
+			this.scene.remove.apply(this.scene, this.roomMappingObjects);
+			this.roomMappingObjects = null;
+		}
+
 		if (!!this.roomMappings) {
+			this.roomMappingObjects = [];
 			for (const mapping of this.roomMappings) {
 				// Add mesh in room shape
 				const shapeMaterial: Material = new MeshBasicMaterial({
@@ -368,6 +381,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 				const shapeMesh: Mesh = new Mesh(shapeGeometry, shapeMaterial);
 				const shapeBounds: Box3 = new Box3().setFromObject(shapeMesh);
 				this.scene.add(shapeMesh);
+				this.roomMappingObjects.push(shapeMesh);
 
 				// Add room name
 				const textGeometry: TextGeometry = new TextGeometry(mapping.roomName, {
@@ -385,6 +399,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 				textMesh.position.z = 1;
 
 				this.scene.add(textMesh);
+				this.roomMappingObjects.push(textMesh);
 			}
 		}
 	}
@@ -429,6 +444,11 @@ export class CanvasComponent implements OnDestroy, OnInit {
 
 				this.colorMap.set(category, color);
 			}
+		}
+
+		if (this.initialized) {
+			this.initializeRoomMappings();
+			this.repaint();
 		}
 	}
 

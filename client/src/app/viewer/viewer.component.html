@@ -9,12 +9,17 @@
 		</span>
 	</div>
 	<div>
-		<button mat-stroked-button (click)="onLoad()">
+		<button mat-stroked-button (click)="onOpen()">
+			Open file...
+		</button>
+	</div>
+	<div>
+		<button mat-stroked-button (click)="onUpload()">
 			Upload file...
 		</button>
 	</div>
 </div>
 
 <div class="canvas-container">
-	<app-canvas-component [hidden]="!lastUploadResult"></app-canvas-component>
+	<app-canvas-component [hidden]="!showPlaceholder"></app-canvas-component>
 </div>

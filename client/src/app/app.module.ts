@@ -18,7 +18,6 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {LocalSettingsService} from "./util/settings/local-settings.service";
 import {ThemeService} from "./util/theme/theme.service";
-import {UploadDialogComponent} from "./viewer/dialog/upload/upload-dialog.component";
 import {MatStepperModule} from "@angular/material/stepper";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {ReactiveFormsModule} from "@angular/forms";
@@ -26,6 +25,14 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {NgxCsvParserModule} from "ngx-csv-parser";
 import {MatExpansionModule} from "@angular/material/expansion";
+import {HttpClientModule} from "@angular/common/http";
+import {CADFileService} from "./service/cad/cad-file.service";
+import {RoomMappingService} from "./service/room-mapping/room-mapping.service";
+import {MatListModule} from "@angular/material/list";
+import {OpenDialogComponent} from "./viewer/dialog/cad/open/open-dialog.component";
+import {UploadDialogComponent} from "./viewer/dialog/cad/upload/upload-dialog.component";
+import {RoomMappingUploadDialogComponent} from "./viewer/dialog/room-mapping/upload/room-mapping-upload-dialog.component";
+import {SelectRoomMappingDialogComponent} from "./viewer/dialog/room-mapping/select/select-room-mapping-dialog.component";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -39,7 +46,8 @@ const materialModules: any[] = [
 	MatProgressSpinnerModule,
 	MatFormFieldModule,
 	MatInputModule,
-	MatExpansionModule
+	MatExpansionModule,
+	MatListModule
 ];
 
 @NgModule({
@@ -49,11 +57,15 @@ const materialModules: any[] = [
 		ControlsComponent,
 		CanvasComponent,
 		LoadingDialogComponent,
-		UploadDialogComponent
+		UploadDialogComponent,
+		OpenDialogComponent,
+		RoomMappingUploadDialogComponent,
+		SelectRoomMappingDialogComponent
 	],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,
+		HttpClientModule,
 		BrowserAnimationsModule,
 		ReactiveFormsModule,
 		...materialModules,
@@ -62,7 +74,9 @@ const materialModules: any[] = [
 	providers: [
 		LoadingDialogService,
 		LocalSettingsService,
-		ThemeService
+		ThemeService,
+		CADFileService,
+		RoomMappingService
 	],
 	bootstrap: [AppComponent]
 })

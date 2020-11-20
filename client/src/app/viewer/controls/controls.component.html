@@ -1,13 +1,25 @@
 <div class="box">
-	<button class="button" mat-icon-button matTooltip="Load a file" (click)="onLoadClicked()">
+	<button class="button" mat-icon-button matTooltip="Open a file" (click)="onOpenClicked()">
+		<mat-icon inline="true">launch</mat-icon>
+	</button>
+	<button class="button" mat-icon-button matTooltip="Upload a file" (click)="onUploadClicked()">
 		<mat-icon inline="true">publish</mat-icon>
 	</button>
 	<button class="button" mat-icon-button matTooltip="Export" (click)="onExportClicked()">
 		<mat-icon inline="true">save</mat-icon>
 	</button>
-	<button class="button" mat-icon-button matTooltip="Reset viewport" (click)="onViewportResetClicked()">
+
+	<span class="divider"></span>
+
+	<button class="button" mat-icon-button matTooltip="Manage room mappings" [disabled]="!canvasOptionsEnabled" (click)="onRoomMappingsClicked()">
+		<mat-icon inline="true">room</mat-icon>
+	</button>
+	<button class="button" mat-icon-button matTooltip="Reset viewport" [disabled]="!canvasOptionsEnabled" (click)="onViewportResetClicked()">
 		<mat-icon inline="true">preview</mat-icon>
 	</button>
+
+	<span class="divider"></span>
+
 	<mat-slide-toggle style="margin-left: 10px;"
 					  [checked]="isDarkMode"
 					  (change)="onThemeChange($event)">

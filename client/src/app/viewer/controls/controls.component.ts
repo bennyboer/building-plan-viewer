@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from "@angular/core";
 import {Observable, Subject, Subscription} from "rxjs";
 import {MatSlideToggleChange} from "@angular/material/slide-toggle";
 import {ThemeService} from "../../util/theme/theme.service";
@@ -17,7 +17,12 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	/**
 	 * Subject emitting events when the load button has been clicked.
 	 */
-	private readonly _onLoadSubject: Subject<void> = new Subject<void>();
+	private readonly _onUploadSubject: Subject<void> = new Subject<void>();
+
+	/**
+	 * Subject emitting events when the open button has been clicked.
+	 */
+	private readonly _onOpenSubject: Subject<void> = new Subject<void>();
 
 	/**
 	 * Subject emitting events when the export button has been clicked.
@@ -30,6 +35,11 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	private readonly _onViewportResetSubject: Subject<void> = new Subject<void>();
 
 	/**
+	 * Subject emitting events when the button to manage room mappings has been clicked.
+	 */
+	private readonly _onManageRoomMappingsSubject: Subject<void> = new Subject<void>();
+
+	/**
 	 * Subscription to theme changes.
 	 */
 	private themeChangeSub: Subscription;
@@ -39,8 +49,14 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	 */
 	public isDarkMode: boolean = false;
 
+	/**
+	 * Whether canvas specific options are currently enabled.
+	 */
+	private _canvasOptionsEnabled: boolean = false;
+
 	constructor(
-		private readonly themeService: ThemeService
+		private readonly themeService: ThemeService,
+		private readonly cd: ChangeDetectorRef
 	) {
 	}
 
@@ -48,9 +64,11 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	 * Called on component destruction.
 	 */
 	public ngOnDestroy(): void {
-		this._onLoadSubject.complete();
+		this._onUploadSubject.complete();
+		this._onOpenSubject.complete();
 		this._onExportSubject.complete();
 		this._onViewportResetSubject.complete();
+		this._onManageRoomMappingsSubject.complete();
 
 		this.themeChangeSub.unsubscribe();
 	}
@@ -66,10 +84,17 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	}
 
 	/**
-	 * Called when the load button has been clicked.
+	 * Called when the open button has been clicked.
 	 */
-	public onLoadClicked(): void {
-		this._onLoadSubject.next();
+	public onOpenClicked(): void {
+		this._onOpenSubject.next();
+	}
+
+	/**
+	 * Called when the upload button has been clicked.
+	 */
+	public onUploadClicked(): void {
+		this._onUploadSubject.next();
 	}
 
 	/**
@@ -87,6 +112,13 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	}
 
 	/**
+	 * Called when the room mappings manage button has been clicked.
+	 */
+	public onRoomMappingsClicked(): void {
+		this._onManageRoomMappingsSubject.next();
+	}
+
+	/**
 	 * Called on theme change.
 	 * @param event which occurred
 	 */
@@ -95,10 +127,17 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	}
 
 	/**
-	 * Get an observable of events when the load button has been clicked.
+	 * Get an observable of events when the open button has been clicked.
 	 */
-	get onLoad(): Observable<void> {
-		return this._onLoadSubject.asObservable();
+	get onOpen(): Observable<void> {
+		return this._onOpenSubject.asObservable();
+	}
+
+	/**
+	 * Get an observable of events when the upload button has been clicked.
+	 */
+	get onUpload(): Observable<void> {
+		return this._onUploadSubject.asObservable();
 	}
 
 	/**
@@ -113,6 +152,29 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	 */
 	get onViewportReset(): Observable<void> {
 		return this._onViewportResetSubject.asObservable();
+	}
+
+	/**
+	 * Get an observable of events when the button to manage room mappings has been clicked.
+	 */
+	get onManageRoomMappings(): Observable<void> {
+		return this._onManageRoomMappingsSubject.asObservable();
+	}
+
+	/**
+	 * Enable or disable canvas specific options.
+	 * @param value to set
+	 */
+	public set canvasOptionsEnabled(value: boolean) {
+		this._canvasOptionsEnabled = value;
+		this.cd.markForCheck();
+	}
+
+	/**
+	 * Check whether canvas specific options are currently enabled.
+	 */
+	public get canvasOptionsEnabled(): boolean {
+		return this._canvasOptionsEnabled;
 	}
 
 }

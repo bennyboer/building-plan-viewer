@@ -5,7 +5,8 @@ import {EntityHandler} from "./handler/entity-handler";
 import {EntityHandlers} from "./handler/entity-handlers";
 import {Bounds3D} from "../util/bounds";
 import {MTextHandler} from "./handler/mtext-handler";
-import {RoomMapping, Vertex} from "../../../dialog/upload/upload-dialog-result";
+import {RoomMapping} from "../../../../service/room-mapping/room-mapping";
+import {Vertex} from "../../../../service/room-mapping/vertex";
 
 /**
  * A canvas source read from DXF.

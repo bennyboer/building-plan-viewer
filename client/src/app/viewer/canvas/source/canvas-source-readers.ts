@@ -1,6 +1,5 @@
 import {CanvasSourceReader} from "./canvas-source-reader";
 import {DxfCanvasSourceReader} from "./dxf/dxf-canvas-source-reader";
-import {FileUtil} from "../../../util/file-util";
 
 /**
  * Collection of available canvas source readers.
@@ -20,14 +19,11 @@ export class CanvasSourceReaders {
 	private static SUPPORTED_FILE_ENDINGS: Set<string>;
 
 	/**
-	 * Get a reader for the passed file.
-	 * @param file to get reader for
+	 * Get a reader for the passed CAD file type
+	 * @param type to get reader for
 	 */
-	public static getReader(file: File): CanvasSourceReader | null {
-		// Fetch file ending
-		const ending: string = FileUtil.getFileEnding(file);
-
-		return this.READERS.get(ending.toLowerCase());
+	public static getReader(type: string): CanvasSourceReader | null {
+		return this.READERS.get(type.toLowerCase());
 	}
 
 	/**

@@ -2,6 +2,8 @@ package de.be.bpv.server.rest.cad.response;
 
 import de.be.bpv.server.persistence.cad.CADFile;
 
+import java.util.Date;
+
 /**
  * Reference to a CAD file.
  */
@@ -17,6 +19,11 @@ public class CADFileReference {
      */
     private long id;
 
+    /**
+     * Timestamp of when the CAD file was created.
+     */
+    private Date createdTimestamp;
+
     public CADFileReference() {
         // Default constructor for Jackson
     }
@@ -29,6 +36,7 @@ public class CADFileReference {
     public CADFileReference(CADFile from) {
         this.id = from.getId();
         this.name = from.getName();
+        this.createdTimestamp = from.getCreatedTimestamp();
     }
 
     /**
@@ -65,6 +73,24 @@ public class CADFileReference {
      */
     public void setId(long id) {
         this.id = id;
+    }
+
+    /**
+     * Get the timestamp of when the CAD file was created.
+     *
+     * @return timestamp
+     */
+    public Date getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    /**
+     * Set the timestamp of when the CAD file was created.
+     *
+     * @param createdTimestamp to set
+     */
+    public void setCreatedTimestamp(Date createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
     }
 
 }

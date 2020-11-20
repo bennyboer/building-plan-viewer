@@ -7,6 +7,7 @@ import org.springframework.lang.Nullable;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -59,6 +60,7 @@ public class RoomMapping {
     /**
      * Vertex to try to map a specific shape to in the CAD file.
      */
+    @Embedded
     @Column(nullable = true)
     private RoomMappingVertex mappingVertex;
 
@@ -178,6 +180,24 @@ public class RoomMapping {
      */
     public void setVertices(@Nullable List<RoomMappingVertex> vertices) {
         this.vertices = vertices;
+    }
+
+    /**
+     * Get the room mapping collection this belongs to.
+     *
+     * @return room mapping collection
+     */
+    public RoomMappingCollection getCollection() {
+        return collection;
+    }
+
+    /**
+     * Set the room mapping collection this belongs to.
+     *
+     * @param collection to set
+     */
+    public void setCollection(RoomMappingCollection collection) {
+        this.collection = collection;
     }
 
 }
