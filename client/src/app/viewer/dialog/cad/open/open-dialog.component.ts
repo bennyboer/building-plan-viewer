@@ -54,7 +54,9 @@ export class OpenDialogComponent implements OnInit {
 	public getCreatedDateRepresentation(timestamp: string): string {
 		const date: Date = new Date(timestamp);
 
-		return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+		const hours: string = `${date.getHours()}`;
+		const minutes: string = `${date.getMinutes()}`;
+		return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
 	}
 
 }
