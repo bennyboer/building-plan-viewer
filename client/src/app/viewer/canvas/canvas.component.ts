@@ -38,6 +38,7 @@ import {Point} from "@angular/cdk/drag-drop";
 import {MTextHandler} from "./source/dxf/handler/mtext-handler";
 import colormap from "colormap";
 import {RoomMapping} from "../../service/room-mapping/room-mapping";
+import {LegendComponent} from "../legend/legend.component";
 
 /**
  * Component where the actual CAD file graphics are drawn on.
@@ -278,6 +279,11 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private colorMap: Map<number, number>;
 
 	/**
+	 * Whether the legend should be shown.
+	 */
+	public showLegend: boolean = false;
+
+	/**
 	 * Current tooltip to display.
 	 */
 	public tooltip: string | null;
@@ -292,6 +298,12 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	 */
 	@ViewChild("tooltipElement")
 	public tooltipElement: ElementRef;
+
+	/**
+	 * Legend component to display a legend for the current color map for.
+	 */
+	@ViewChild(LegendComponent)
+	public legend: LegendComponent;
 
 	constructor(
 		private readonly cd: ChangeDetectorRef,
@@ -469,6 +481,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.roomMappings = mappings;
 
 		this.colorMap = new Map<number, number>();
+		const legendMapping: Map<string, string> = new Map<string, string>();
 		if (!!this.roomMappings) {
 			// Get amount of categories
 			const categories: Set<number> = new Set<number>();
@@ -489,11 +502,15 @@ export class CanvasComponent implements OnDestroy, OnInit {
 
 			let colorIndex: number = 0;
 			for (const category of sortedCategories) {
-				const color: number = parseInt(hexColors[colorIndex++].substring(1), 16);
+				const hexColor: string = hexColors[colorIndex++];
+				const color: number = parseInt(hexColor.substring(1), 16);
 
 				this.colorMap.set(category, color);
+				legendMapping.set(category.toString(10), hexColor);
 			}
 		}
+		this.legend.mapping = legendMapping;
+		this.showLegend = legendMapping.size > 0;
 
 		if (this.initialized) {
 			this.initializeRoomMappings();

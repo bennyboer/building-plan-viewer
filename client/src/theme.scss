@@ -9,6 +9,7 @@
 
 @import 'app/viewer/controls/controls.component';
 @import 'app/viewer/canvas/canvas.component';
+@import 'app/viewer/legend/legend.component';
 
 // Fonts
 @import 'https://fonts.googleapis.com/css?family=Material+Icons';
@@ -223,6 +224,7 @@ $altTheme: mat-dark-theme($theme-primary, $theme-accent, $theme-warn);
 	@include angular-material-theme($theme);
 	@include controls-component-theme($theme);
 	@include canvas-component-theme($theme);
+	@include legend-component-theme($theme);
 }
 
 @include custom-theme($theme);

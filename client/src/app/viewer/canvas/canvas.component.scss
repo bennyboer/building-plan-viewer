@@ -16,6 +16,21 @@
 	border-radius: 0 3px 3px 3px;
 }
 
+.legend-container {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	right: 10px;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: right;
+	align-items: center;
+	pointer-events: none;
+	z-index: 200;
+}
+
 @mixin canvas-component-theme($theme) {
 	$background: map-get($theme, background);
 

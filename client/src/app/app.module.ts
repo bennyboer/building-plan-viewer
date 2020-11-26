@@ -34,6 +34,7 @@ import {UploadDialogComponent} from "./viewer/dialog/cad/upload/upload-dialog.co
 import {RoomMappingUploadDialogComponent} from "./viewer/dialog/room-mapping/upload/room-mapping-upload-dialog.component";
 import {SelectRoomMappingDialogComponent} from "./viewer/dialog/room-mapping/select/select-room-mapping-dialog.component";
 import {MarkdownModule} from "ngx-markdown";
+import {LegendComponent} from "./viewer/legend/legend.component";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -61,7 +62,8 @@ const materialModules: any[] = [
 		UploadDialogComponent,
 		OpenDialogComponent,
 		RoomMappingUploadDialogComponent,
-		SelectRoomMappingDialogComponent
+		SelectRoomMappingDialogComponent,
+		LegendComponent
 	],
 	imports: [
 		BrowserModule,
