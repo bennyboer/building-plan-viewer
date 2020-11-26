@@ -961,7 +961,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 
 			const mapping: RoomMapping = this.roomObjectMapping.get(intersection.object.uuid);
 			if (!!mapping && !!mapping.description && mapping.description.length > 0) {
-				if (!this.isTooltipShown) {
+				if (!this.isTooltipShown || this.tooltip !== mapping.description) {
 					this.isTooltipShown = true;
 					this.tooltip = mapping.description;
 					this.cd.markForCheck();
