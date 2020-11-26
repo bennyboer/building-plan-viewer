@@ -6,6 +6,21 @@
 </h1>
 
 <div mat-dialog-content>
+
+	<div>
+		<mat-form-field appearance="outline">
+			<mat-label>Colormap</mat-label>
+			<mat-select [(value)]="selectedColormap">
+				<mat-option *ngFor="let colormap of availableColormaps" [value]="colormap">
+					<span style="display: flex; flex-direction: row; justify-content: center; align-items: center">
+						{{ colormap }}&nbsp;
+						<app-colormap-icon-component [name]="colormap"></app-colormap-icon-component>
+					</span>
+				</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+
 	<div *ngIf="referencePromise | async as references; else loading">
 		<div *ngIf="!!references && references.length > 0; else empty">
 			<p>Please select one of the following room mappings to activate</p>

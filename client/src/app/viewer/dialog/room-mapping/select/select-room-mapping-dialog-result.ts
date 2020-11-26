@@ -6,6 +6,11 @@ import {RoomMappingReference} from "../../../../service/room-mapping/room-mappin
 export interface SelectRoomMappingDialogResult {
 
 	/**
+	 * Name of the colormap to use.
+	 */
+	colormap: string;
+
+	/**
 	 * Reference to show.
 	 * May be null when there should be no mapping shown.
 	 */

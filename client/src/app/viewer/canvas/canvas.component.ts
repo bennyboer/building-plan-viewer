@@ -37,6 +37,7 @@ import {DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, UP_ARROW} from "@angular/cdk/keycod
 import {Point} from "@angular/cdk/drag-drop";
 import {MTextHandler} from "./source/dxf/handler/mtext-handler";
 import colormap from "colormap";
+import colorScales from "colormap/colorScale";
 import {RoomMapping} from "../../service/room-mapping/room-mapping";
 import {LegendComponent} from "../legend/legend.component";
 
@@ -476,8 +477,9 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	/**
 	 * Set the passed room mappings to display in the canvas.
 	 * @param mappings to set
+	 * @param colormapName of the colormap to use
 	 */
-	public setRoomMappings(mappings: RoomMapping[]): void {
+	public setRoomMappings(mappings: RoomMapping[], colormapName: string = "jet"): void {
 		this.roomMappings = mappings;
 
 		this.colorMap = new Map<number, number>();
@@ -490,9 +492,10 @@ export class CanvasComponent implements OnDestroy, OnInit {
 			}
 
 			// Create color map based on the amount of categories
+			const minShades: number = colorScales[colormapName].length;
 			const hexColors: string[] = colormap({
-				colormap: "jet",
-				nshades: Math.max(6, categories.size),
+				colormap: colormapName,
+				nshades: Math.max(minShades, categories.size),
 				format: "hex",
 				alpha: 1.0
 			});

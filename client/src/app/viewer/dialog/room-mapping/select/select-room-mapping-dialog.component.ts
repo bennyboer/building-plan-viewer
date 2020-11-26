@@ -7,6 +7,7 @@ import {RoomMappingReference} from "../../../../service/room-mapping/room-mappin
 import {SelectRoomMappingDialogResult} from "./select-room-mapping-dialog-result";
 import {RoomMappingUploadDialogComponent} from "../upload/room-mapping-upload-dialog.component";
 import {RoomMappingUploadDialogData} from "../upload/room-mapping-upload-dialog-data";
+import colorScales from "colormap/colorScale";
 
 /**
  * Component letting the user select a room mapping to display.
@@ -24,6 +25,16 @@ export class SelectRoomMappingDialogComponent implements OnInit {
 	 */
 	public referencePromise: Promise<CADFileReference[]>;
 
+	/**
+	 * All available color maps.
+	 */
+	public readonly availableColormaps: string[];
+
+	/**
+	 * The currently selected color map.
+	 */
+	public selectedColormap: string;
+
 	// TODO Let the user delete mappings and CAD files!
 
 	constructor(
@@ -33,6 +44,8 @@ export class SelectRoomMappingDialogComponent implements OnInit {
 		private readonly dialog: MatDialog,
 		@Inject(MAT_DIALOG_DATA) private readonly data: SelectRoomMappingDialogData,
 	) {
+		this.availableColormaps = Object.keys(colorScales);
+		this.selectedColormap = this.availableColormaps[0];
 	}
 
 	/**
@@ -62,6 +75,7 @@ export class SelectRoomMappingDialogComponent implements OnInit {
 	 */
 	public onSelect(reference: RoomMappingReference | null): void {
 		this.dialogRef.close({
+			colormap: this.selectedColormap,
 			reference
 		} as SelectRoomMappingDialogResult);
 	}

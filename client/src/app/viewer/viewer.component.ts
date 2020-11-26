@@ -263,7 +263,7 @@ export class ViewerComponent implements OnInit, OnDestroy {
 			if (!!result.reference) {
 				const mapping: RoomMappingCollection = await this.roomMappingService.getOne(result.reference.id);
 
-				this.canvasComponent.setRoomMappings(mapping.mappings);
+				this.canvasComponent.setRoomMappings(mapping.mappings, result.colormap);
 			} else {
 				this.canvasComponent.setRoomMappings(null);
 			}

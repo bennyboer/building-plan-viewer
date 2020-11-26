@@ -35,6 +35,8 @@ import {RoomMappingUploadDialogComponent} from "./viewer/dialog/room-mapping/upl
 import {SelectRoomMappingDialogComponent} from "./viewer/dialog/room-mapping/select/select-room-mapping-dialog.component";
 import {MarkdownModule} from "ngx-markdown";
 import {LegendComponent} from "./viewer/legend/legend.component";
+import {ColormapIconComponent} from "./viewer/dialog/room-mapping/select/colormap-icon/colormap-icon.component";
+import {MatSelectModule} from "@angular/material/select";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -49,7 +51,8 @@ const materialModules: any[] = [
 	MatFormFieldModule,
 	MatInputModule,
 	MatExpansionModule,
-	MatListModule
+	MatListModule,
+	MatSelectModule
 ];
 
 @NgModule({
@@ -63,7 +66,8 @@ const materialModules: any[] = [
 		OpenDialogComponent,
 		RoomMappingUploadDialogComponent,
 		SelectRoomMappingDialogComponent,
-		LegendComponent
+		LegendComponent,
+		ColormapIconComponent
 	],
 	imports: [
 		BrowserModule,
