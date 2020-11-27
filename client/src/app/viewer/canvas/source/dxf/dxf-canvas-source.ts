@@ -100,6 +100,65 @@ export class DxfCanvasSource implements CanvasSource {
 	}
 
 	/**
+	 * Map the passed vertex coordinates to an object.
+	 * @param x x-coordinate of the vertex
+	 * @param y y-coordinate of the vertex
+	 * @param camera to use for raycasting
+	 */
+	private mapVertexToObject(x: number, y: number, camera: Camera): Object3D | null {
+		let vector: Vector3 = new Vector3(x, y, 0);
+		vector = vector.project(camera);
+
+		this.raycaster.setFromCamera(vector, camera);
+
+		const intersections: Intersection[] = this.raycaster.intersectObjects(this.possibleRoomObjects, true);
+		if (intersections.length > 0) {
+			let intersection: Intersection = intersections[0];
+			if (intersections.length > 1) {
+				// Take the smallest object that intersects to prevent getting the building boundaries
+				const distance: number = intersection.distance;
+				let minSize: number = DxfCanvasSource.calculateObjectSize(intersection.object);
+				for (const int of intersections) {
+					if (int.distance <= distance) {
+						const newSize: number = DxfCanvasSource.calculateObjectSize(intersection.object);
+						if (newSize < minSize) {
+							minSize = newSize;
+							intersection = int;
+						}
+					}
+				}
+			}
+
+			return intersection.object;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Try to map the passed vertices to an exiting object in the scene.
+	 * @param vertices to map
+	 * @param camera to use for raycasting
+	 */
+	private mapVerticesToObject(vertices: DxfPosition[], camera: Camera): Object3D | null {
+		let firstObject: Object3D | null = null;
+
+		for (let i = 0; i < Math.min(3, vertices.length); i++) {
+			const vertex: DxfPosition = vertices[i];
+			const object: Object3D | null = this.mapVertexToObject(vertex.x, vertex.y, camera);
+			if (!firstObject) {
+				firstObject = object;
+			} else {
+				if (firstObject.uuid !== object.uuid) {
+					return null; // Could not find object
+				}
+			}
+		}
+
+		return firstObject;
+	}
+
+	/**
 	 * Transform the given room mapping.
 	 * This method gives the canvas source the opportunity to improve
 	 * or simply transform any room mapping.
@@ -113,36 +172,25 @@ export class DxfCanvasSource implements CanvasSource {
 	 */
 	public mapToRoom(mapping: RoomMapping, scene: Scene, camera: Camera): BufferGeometry {
 		if (!!mapping.mappingVertex) {
-			let vector: Vector3 = new Vector3(mapping.mappingVertex.x, mapping.mappingVertex.y, 0);
-			vector = vector.project(camera);
+			const object: Object3D | null = this.mapVertexToObject(mapping.mappingVertex.x, mapping.mappingVertex.y, camera);
 
-			this.raycaster.setFromCamera(vector, camera);
-
-			const intersections: Intersection[] = this.raycaster.intersectObjects(this.possibleRoomObjects, true);
-			if (intersections.length > 0) {
-				let intersection: Intersection = intersections[0];
-				if (intersections.length > 1) {
-					// Take the smallest object that intersects to prevent getting the building boundaries
-					const distance: number = intersection.distance;
-					let minSize: number = DxfCanvasSource.calculateObjectSize(intersection.object);
-					for (const int of intersections) {
-						if (int.distance <= distance) {
-							const newSize: number = DxfCanvasSource.calculateObjectSize(intersection.object);
-							if (newSize < minSize) {
-								minSize = newSize;
-								intersection = int;
-							}
-						}
-					}
-				}
-
-				const shape: Shape = this.possibleRoomObjectsShapes.get(intersection.object.uuid);
+			if (!!object) {
+				const shape: Shape = this.possibleRoomObjectsShapes.get(object.uuid);
 				if (!!shape) {
 					return new ShapeBufferGeometry(shape);
 				}
 			}
 		} else if (!!mapping.vertices) {
 			const vertices: DxfPosition[] = mapping.vertices;
+
+			const object: Object3D | null = this.mapVerticesToObject(vertices, camera);
+
+			if (!!object) {
+				const shape: Shape = this.possibleRoomObjectsShapes.get(object.uuid);
+				if (!!shape) {
+					return new ShapeBufferGeometry(shape);
+				}
+			}
 
 			// Calculate hash code for the vertices
 			const hashCode: number = DxfCanvasSource.calculateVerticesHashCode(vertices);
