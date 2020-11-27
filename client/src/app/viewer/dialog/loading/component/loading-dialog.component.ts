@@ -41,7 +41,7 @@ export class LoadingDialogComponent implements OnDestroy, AfterViewChecked {
 	 */
 	public update(config: LoadingDialogConfig): void {
 		this.config = config;
-		this.cd.markForCheck();
+		this.cd.detectChanges();
 	}
 
 	/**

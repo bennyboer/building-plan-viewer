@@ -1,5 +1,6 @@
 <div mat-dialog-content class="content">
 	<mat-progress-bar
+		[class._mat-animation-noopable]="isDeterminate"
 		[mode]="isDeterminate ? 'determinate' : 'indeterminate'"
 		[value]="progress">
 	</mat-progress-bar>

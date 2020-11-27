@@ -409,7 +409,14 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	/**
 	 * Initialize the room mappings in the current scene.
 	 */
-	private initializeRoomMappings() {
+	private async initializeRoomMappings(): Promise<void> {
+		this.load.next({
+			isLoading: true, progress: 0, continueLoading: () => {
+			},
+			cancelLoading: () => {
+			}
+		});
+
 		if (!!this.roomMappingObjects) {
 			// Remove first from current scene
 			this.scene.remove.apply(this.scene, this.roomMappingObjects);
@@ -424,6 +431,9 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		if (!!this.roomMappings) {
 			this.roomMappingObjects = [];
 			this.roomObjects = [];
+
+			let i: number = 0;
+			const maxI: number = this.roomMappings.length;
 			for (const mapping of this.roomMappings) {
 				// Add mesh in room shape
 				let shapeMaterial: Material = materials.get(mapping.category);
@@ -462,8 +472,36 @@ export class CanvasComponent implements OnDestroy, OnInit {
 					this.scene.add(textMesh);
 					this.roomMappingObjects.push(textMesh);
 				}
+
+				i++;
+
+				const continueLoading: boolean = await new Promise<boolean>(
+					resolve => {
+						this.load.next({
+							isLoading: true,
+							progress: i * 100 / maxI,
+							continueLoading: () => {
+								resolve(true);
+							},
+							cancelLoading: () => {
+								resolve(false);
+							}
+						});
+					}
+				);
+
+				if (!continueLoading) {
+					break;
+				}
 			}
 		}
+
+		this.load.next({
+			isLoading: false, progress: 100, continueLoading: () => {
+			},
+			cancelLoading: () => {
+			}
+		});
 	}
 
 	/**
@@ -516,8 +554,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		this.showLegend = legendMapping.size > 0;
 
 		if (this.initialized) {
-			this.initializeRoomMappings();
-			this.repaint();
+			this.initializeRoomMappings().then(() => this.repaint());
 		}
 	}
 
