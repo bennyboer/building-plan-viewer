@@ -135,6 +135,11 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	private repaintRequested: boolean = false;
 
 	/**
+	 * Whether to repaint again after done with repainting.
+	 */
+	private repaintAfterDone: boolean = false;
+
+	/**
 	 * Subscription to theme changes.
 	 */
 	private themeChangeSub: Subscription;
@@ -403,7 +408,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 
 		this.updateViewport(bounds, reset);
 
-		this.initializeRoomMappings();
+		await this.initializeRoomMappings();
 		this.repaint();
 	}
 
@@ -653,9 +658,16 @@ export class CanvasComponent implements OnDestroy, OnInit {
 					this.renderer.render(this.scene, this.camera);
 					this.repaintRequested = false;
 
+					if (this.repaintAfterDone) {
+						this.repaintAfterDone = false;
+						this.repaint();
+					}
+
 					resolve();
 				})
 			);
+		} else {
+			this.repaintAfterDone = true;
 		}
 	}
 
