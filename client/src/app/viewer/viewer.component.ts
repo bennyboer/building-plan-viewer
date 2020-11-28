@@ -1,4 +1,5 @@
 import {
+	AfterViewInit,
 	ChangeDetectionStrategy,
 	ChangeDetectorRef,
 	Component,
@@ -28,6 +29,11 @@ import {SelectRoomMappingDialogData} from "./dialog/room-mapping/select/select-r
 import {SelectRoomMappingDialogResult} from "./dialog/room-mapping/select/select-room-mapping-dialog-result";
 import {RoomMappingService} from "../service/room-mapping/room-mapping.service";
 import {RoomMappingCollection} from "../service/room-mapping/room-mapping-collection";
+import {SettingsService} from "../service/settings/settings.service";
+import {ExportSettings} from "../service/settings/export-settings";
+import {ExportService} from "../service/export/export.service";
+import {RoomMappingReference} from "../service/room-mapping/room-mapping-reference";
+import * as FileSaver from "file-saver";
 
 /**
  * Viewer component displaying the building plan, etc.
@@ -38,7 +44,7 @@ import {RoomMappingCollection} from "../service/room-mapping/room-mapping-collec
 	styleUrls: ["viewer.component.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ViewerComponent implements OnInit, OnDestroy {
+export class ViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 	/**
 	 * Message shown as placeholder when no file has been loaded.
@@ -112,6 +118,16 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	private currentCadFileReference: CADFileReference | null = null;
 
 	/**
+	 * Reference of the currently shown room mapping collection.
+	 */
+	private currentRoomMappingReference: RoomMappingReference | null = null;
+
+	/**
+	 * Name of the currently selected color map.
+	 */
+	private currentColorMapName: string | null = null;
+
+	/**
 	 * Canvas component of the viewer.
 	 */
 	@ViewChild(CanvasComponent)
@@ -125,7 +141,9 @@ export class ViewerComponent implements OnInit, OnDestroy {
 		private readonly loadingDialogService: LoadingDialogService,
 		private readonly dialog: MatDialog,
 		private readonly cadFileService: CADFileService,
-		private readonly roomMappingService: RoomMappingService
+		private readonly roomMappingService: RoomMappingService,
+		private readonly settingsService: SettingsService,
+		private readonly exportService: ExportService
 	) {
 	}
 
@@ -149,6 +167,7 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	private initializeControlBindings() {
 		this.openSubscription = this.controls.onOpen.subscribe(() => this.onOpen());
 		this.uploadSubscription = this.controls.onUpload.subscribe(() => this.onUpload());
+		this.exportSubscription = this.controls.onExport.subscribe(() => this.onExport());
 		this.viewportResetSubscription = this.controls.onViewportReset.subscribe(() => this.onResetViewport());
 		this.manageRoomMappingsSubscription = this.controls.onManageRoomMappings.subscribe(() => this.onManageRoomMappings());
 	}
@@ -162,6 +181,36 @@ export class ViewerComponent implements OnInit, OnDestroy {
 		this.exportSubscription.unsubscribe();
 		this.viewportResetSubscription.unsubscribe();
 		this.manageRoomMappingsSubscription.unsubscribe();
+	}
+
+	/**
+	 * Open the viewer for the passed export mode settings.
+	 * @param settings to open viewer for
+	 */
+	public async openForExportMode(settings: ExportSettings): Promise<void> {
+		this.showPlaceholder = false;
+		this.cd.markForCheck();
+
+		this.currentCadFileReference = {
+			id: settings.cadFile.id,
+			name: settings.cadFile.name,
+			createdTimestamp: settings.cadFile.createdTimestamp
+		};
+
+		this.loadingDialogService.open({message: "Loading file...", progress: 0});
+
+		if (!this.loadEventSub) {
+			this.loadEventSub = this.canvasComponent.loadEvents.subscribe((event) => this.onCanvasLoading(event));
+		}
+
+		const reader: CanvasSourceReader = CanvasSourceReaders.getReader(settings.cadFile.type);
+		if (!reader) {
+			throw new Error(`CAD file type '${settings.cadFile.type}' is unsupported`);
+		}
+
+		this.canvasComponent.source = await reader.read(settings.cadFile);
+		this.canvasComponent.setRoomMappings(settings.roomMappingCollection.mappings, settings.colorMap);
+		this.controls.canvasOptionsEnabled = true;
 	}
 
 	/**
@@ -213,6 +262,39 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	}
 
 	/**
+	 * Called when a export event arrives from the controls component.
+	 */
+	private async onExport(): Promise<void> {
+		if (!this.currentCadFileReference) {
+			this.snackBar.open("In order to export, please open the CAD file you wish to export first", "OK", {
+				duration: 5000
+			});
+			return;
+		}
+
+		await this.loadingDialogService.open({
+			message: "Export in progress..."
+		});
+
+		const result: string = await this.exportService.exportAsHTML({
+			cadFileId: this.currentCadFileReference.id,
+			mappingId: !!this.currentRoomMappingReference ? this.currentRoomMappingReference.id : null,
+			colorMap: this.currentColorMapName
+		});
+
+		let name: string = this.currentCadFileReference.name;
+		const lastIndexOf: number = name.lastIndexOf("."); // Strip file extension from name
+		if (lastIndexOf !== -1) {
+			name = name.substring(0, lastIndexOf);
+		}
+
+		const blob: Blob = new Blob([result], {type: "text/html;charset=utf-8"});
+		FileSaver.saveAs(blob, `${name}.html`);
+
+		this.loadingDialogService.close();
+	}
+
+	/**
 	 * Let the user open an already existing CAD file.
 	 */
 	public async openFile(): Promise<CADFileReference | null> {
@@ -261,6 +343,9 @@ export class ViewerComponent implements OnInit, OnDestroy {
 
 		if (!!result) {
 			if (!!result.reference) {
+				this.currentRoomMappingReference = result.reference;
+				this.currentColorMapName = result.colormap;
+
 				const mapping: RoomMappingCollection = await this.roomMappingService.getOne(result.reference.id);
 
 				this.canvasComponent.setRoomMappings(mapping.mappings, result.colormap);
@@ -312,12 +397,25 @@ export class ViewerComponent implements OnInit, OnDestroy {
 	}
 
 	/**
+	 * Called after view initialization.
+	 */
+	public ngAfterViewInit(): void {
+		if (this.settingsService.isExportMode) {
+			this.openForExportMode(this.settingsService.exportSettings);
+		}
+	}
+
+	/**
 	 * Called on drop on the component.
 	 * @param event of the drop
 	 */
 	@HostListener("drop", ["$event"])
 	public onDrop(event: DragEvent): void {
 		event.preventDefault(); // Prevent the default action (opening link or something)
+
+		if (this.settingsService.isExportMode) {
+			return; // Dropping not supported in export mode
+		}
 
 		if (!!event.dataTransfer && !!event.dataTransfer.files && event.dataTransfer.files.length >= 1) {
 			const file: File = event.dataTransfer.files[0];

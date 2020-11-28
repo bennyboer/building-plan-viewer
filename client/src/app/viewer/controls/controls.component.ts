@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit
 import {Observable, Subject, Subscription} from "rxjs";
 import {MatSlideToggleChange} from "@angular/material/slide-toggle";
 import {ThemeService} from "../../util/theme/theme.service";
+import {SettingsService} from "../../service/settings/settings.service";
 
 /**
  * Component displaying the viewer controls (load file, export, ...).
@@ -54,10 +55,17 @@ export class ControlsComponent implements OnInit, OnDestroy {
 	 */
 	private _canvasOptionsEnabled: boolean = false;
 
+	/**
+	 * Whether the application is currently running in export mode.
+	 */
+	public readonly isExportMode: boolean;
+
 	constructor(
 		private readonly themeService: ThemeService,
-		private readonly cd: ChangeDetectorRef
+		private readonly cd: ChangeDetectorRef,
+		private readonly settingsService: SettingsService
 	) {
+		this.isExportMode = this.settingsService.isExportMode;
 	}
 
 	/**

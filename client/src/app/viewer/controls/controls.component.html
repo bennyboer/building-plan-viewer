@@ -1,20 +1,22 @@
 <div class="box">
-	<button class="button" mat-icon-button matTooltip="Open a file" (click)="onOpenClicked()">
+	<button class="button" mat-icon-button matTooltip="Open a file" *ngIf="!isExportMode" (click)="onOpenClicked()">
 		<mat-icon inline="true">launch</mat-icon>
 	</button>
-	<button class="button" mat-icon-button matTooltip="Upload a file" (click)="onUploadClicked()">
+	<button class="button" mat-icon-button matTooltip="Upload a file" *ngIf="!isExportMode" (click)="onUploadClicked()">
 		<mat-icon inline="true">publish</mat-icon>
 	</button>
-	<button class="button" mat-icon-button matTooltip="Export" (click)="onExportClicked()">
+	<button class="button" mat-icon-button matTooltip="Export" *ngIf="!isExportMode" (click)="onExportClicked()">
 		<mat-icon inline="true">save</mat-icon>
 	</button>
 
-	<span class="divider"></span>
+	<span class="divider" *ngIf="!isExportMode"></span>
 
-	<button class="button" mat-icon-button matTooltip="Manage room mappings" [disabled]="!canvasOptionsEnabled" (click)="onRoomMappingsClicked()">
+	<button class="button" mat-icon-button matTooltip="Manage room mappings" *ngIf="!isExportMode"
+			[disabled]="!canvasOptionsEnabled" (click)="onRoomMappingsClicked()">
 		<mat-icon inline="true">room</mat-icon>
 	</button>
-	<button class="button" mat-icon-button matTooltip="Reset viewport" [disabled]="!canvasOptionsEnabled" (click)="onViewportResetClicked()">
+	<button class="button" mat-icon-button matTooltip="Reset viewport" [disabled]="!canvasOptionsEnabled"
+			(click)="onViewportResetClicked()">
 		<mat-icon inline="true">preview</mat-icon>
 	</button>
 

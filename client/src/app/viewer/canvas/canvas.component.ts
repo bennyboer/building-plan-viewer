@@ -401,9 +401,10 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		});
 		this.lastBounds = bounds;
 
-		this.initializeRoomMappings();
-
 		this.updateViewport(bounds, reset);
+
+		this.initializeRoomMappings();
+		this.repaint();
 	}
 
 	/**
@@ -628,8 +629,6 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		}
 
 		this.updateCameraProjection(viewport, reset);
-
-		this.repaint();
 	}
 
 	/**
@@ -638,6 +637,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 	public resetViewport(): void {
 		if (!!this.lastBounds) {
 			this.updateViewport(this.lastBounds, true);
+			this.repaint();
 		}
 	}
 
@@ -1226,6 +1226,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 
 		if (!!this.lastBounds) {
 			this.updateViewport(this.lastBounds, false);
+			this.repaint();
 		}
 	}
 

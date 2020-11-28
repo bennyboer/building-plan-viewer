@@ -2,6 +2,7 @@ import {AbstractEntityHandler} from "./abstract-entity-handler";
 import {Dxf, DxfEntity, DxfMTextEntity} from "../dxf";
 import {Box3, Font, FontLoader, Material, Mesh, MeshBasicMaterial, Object3D, TextGeometry} from "three";
 import {DxfCanvasSource} from "../dxf-canvas-source";
+import {FontUtil} from "../../../../../util/font/font-util";
 
 /**
  * Handler being able to process MText entities.
@@ -18,14 +19,7 @@ export class MTextHandler extends AbstractEntityHandler {
 	 */
 	private static async loadFont(): Promise<Font> {
 		const loader: FontLoader = new FontLoader();
-		return new Promise(
-			resolve => {
-				loader.load("/assets/fonts/Roboto_Regular.json",
-					(font) => {
-						resolve(font);
-					});
-			}
-		);
+		return loader.parse(FontUtil.ROBOTO_REGULAR);
 	}
 
 	/**

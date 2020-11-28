@@ -37,6 +37,8 @@ import {MarkdownModule} from "ngx-markdown";
 import {LegendComponent} from "./viewer/legend/legend.component";
 import {ColormapIconComponent} from "./viewer/dialog/room-mapping/select/colormap-icon/colormap-icon.component";
 import {MatSelectModule} from "@angular/material/select";
+import {SettingsService} from "./service/settings/settings.service";
+import {ExportService} from "./service/export/export.service";
 
 const materialModules: any[] = [
 	MatButtonModule,
@@ -84,7 +86,9 @@ const materialModules: any[] = [
 		LocalSettingsService,
 		ThemeService,
 		CADFileService,
-		RoomMappingService
+		RoomMappingService,
+		SettingsService,
+		ExportService
 	],
 	bootstrap: [AppComponent]
 })
