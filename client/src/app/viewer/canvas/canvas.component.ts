@@ -583,6 +583,7 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		cam.position.z = 10;
 		this.camera = cam;
 
+		this.renderer.setPixelRatio(window.devicePixelRatio); // For supporting Hi-DPI screens
 		this.renderer.setSize(
 			elementBounds.width,
 			elementBounds.height,

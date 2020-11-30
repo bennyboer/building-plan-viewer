@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'de.be.bpv'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0'
 sourceCompatibility = '15'
 
 def frontendOutput = "${project(':client').projectDir}/dist"
@@ -47,6 +47,10 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.named("bootBuildImage") {
+    imageName = "building-plan-viewer:${version}"
 }
 
 static def isAngularDevServerRunning() {
