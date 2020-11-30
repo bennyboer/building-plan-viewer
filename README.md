@@ -17,9 +17,9 @@ Regardless, by default the web app will run at port `8080`, which is configurabl
 
 In order to build a bootable jar, you'll have to run `gradlew.bat bootJar` (Windows) or `gradlew bootJar` (Linux).
 You'll find the built JAR file at `/server/build/libs`.
-Execute the application using `java -jar server/build/libs/server-0.0.1-SNAPSHOT.jar`.
+Execute the application using `java -jar server/build/libs/server-0.1.0.jar`.
 
-You may change the port (or apply other Spring Boot supported settings) by calling `java -jar .\server\build\libs\server-0.0.1-SNAPSHOT.jar --server.port=80` or the equivalent syntax `java -jar -Dserver.port=80 .\server\build\libs\server-0.0.1-SNAPSHOT.jar`
+You may change the port (or apply other Spring Boot supported settings) by calling `java -jar .\server\build\libs\server-0.1.0.jar --server.port=80` or the equivalent syntax `java -jar -Dserver.port=80 .\server\build\libs\server-0.1.0.jar`
 
 #### Docker image
 
