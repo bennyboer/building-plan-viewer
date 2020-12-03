@@ -10,11 +10,10 @@ node {
 	download = true
 }
 
-task buildFrontend(type: NpmTask) {
-	description 'Build the client angular application'
-	dependsOn 'npmInstall'
-
-	args = ['run', 'build']
+task buildFrontend(type: NpxTask) {
+	dependsOn npmInstall
+	command = 'ng'
+	args = ['build', '--prod']
 }
 
 task startDevelopmentServer {
@@ -24,7 +23,7 @@ task startDevelopmentServer {
 		println "STARTING ANGULAR DEVELOPMENT SERVER..."
 		ProcessBuilder serveBuilder
 
-		String serveCommand = "npm run ng -- serve --prod --live-reload=false --watch=false"
+		String serveCommand = "$node.variant.nodeExec ./node_modules/@angular/cli/bin/ng serve --prod --live-reload=false --watch=false"
 		if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 			// WINDOWS
 			serveBuilder = new ProcessBuilder("cmd /c $serveCommand".split(" "))
