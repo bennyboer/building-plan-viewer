@@ -24,7 +24,7 @@ task startDevelopmentServer {
 		println "STARTING ANGULAR DEVELOPMENT SERVER..."
 		ProcessBuilder serveBuilder
 
-		String serveCommand = "ng serve --prod --live-reload=false --watch=false"
+		String serveCommand = "npm run ng -- serve --prod --live-reload=false --watch=false"
 		if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 			// WINDOWS
 			serveBuilder = new ProcessBuilder("cmd /c $serveCommand".split(" "))
