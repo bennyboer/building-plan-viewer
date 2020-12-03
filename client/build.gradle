@@ -29,7 +29,7 @@ task startDevelopmentServer {
 			serveBuilder = new ProcessBuilder("cmd /c $serveCommand".split(" "))
 		} else {
 			// LINUX
-			serveBuilder = new ProcessBuilder("bash -c $serveCommand".split(" "))
+			serveBuilder = new ProcessBuilder("sh -c $serveCommand".split(" "))
 		}
 		serveBuilder.redirectErrorStream(true)
 		serveBuilder.directory(new File("$projectDir"))
@@ -38,13 +38,13 @@ task startDevelopmentServer {
 		InputStream stdout = serveProcess.getInputStream()
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
 
-		def line
-		while ((line = reader.readLine()) != null) {
-			println line
-			if (line.contains("Compiled successfully")) {
-				break;
-			}
-		}
+//		def line
+//		while ((line = reader.readLine()) != null) {
+//			println line
+//			if (line.contains("Compiled successfully")) {
+//				break;
+//			}
+//		}
 
 		println "ANGULAR DEVELOPMENT SERVER STARTED"
 
