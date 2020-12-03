@@ -23,6 +23,8 @@ task startDevelopmentServer {
 		println "STARTING ANGULAR DEVELOPMENT SERVER..."
 		ProcessBuilder serveBuilder
 
+		println "Using node executable at $node.variant.nodeExec"
+
 		String serveCommand = "$node.variant.nodeExec ./node_modules/@angular/cli/bin/ng serve --prod --live-reload=false --watch=false"
 		if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 			// WINDOWS
@@ -38,13 +40,23 @@ task startDevelopmentServer {
 		InputStream stdout = serveProcess.getInputStream()
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
 
-//		def line
-//		while ((line = reader.readLine()) != null) {
-//			println line
-//			if (line.contains("Compiled successfully")) {
-//				break;
-//			}
-//		}
+		long start = System.nanoTime();
+
+		def line
+		while ((line = reader.readLine()) != null) {
+			println line
+
+			long waitTime = (System.nanoTime() - start) / 1000 / 1000
+			boolean isTimeout = waitTime > 120000
+			if (isTimeout) {
+				println "Could not start development server -> TIMEOUT"
+				break
+			}
+
+			if (line.contains("Compiled successfully")) {
+				break
+			}
+		}
 
 		println "ANGULAR DEVELOPMENT SERVER STARTED"
 
