@@ -10,14 +10,10 @@ node {
 	download = true
 }
 
-task buildFrontend(type: NpxTask) {
-	dependsOn 'npmInstall', 'testThingy'
-	command = 'ng'
+task buildFrontend(type: NodeTask) {
+	dependsOn 'npmInstall'
+	script = file('node_modules/@angular/cli/bin/ng')
 	args = ['build', '--prod']
-}
-
-task testThingy(type: NpmTask) {
-	args = ['config', 'get', 'production']
 }
 
 task startDevelopmentServer {
