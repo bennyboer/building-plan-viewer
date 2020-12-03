@@ -12,15 +12,15 @@ node {
 
 task buildFrontend(type: NpmTask) {
 	description 'Build the client angular application'
+	dependsOn 'npmInstall'
 
 	args = ['run', 'build']
 }
 
-task buildExportFile(type: NodeTask) {
-	script = file("$projectDir/scripts/build-export.js")
+task startDevelopmentServer {
+	dependsOn 'npmInstall'
 
-	Process serveProcess
-	doFirst {
+	doLast {
 		println "STARTING ANGULAR DEVELOPMENT SERVER..."
 		ProcessBuilder serveBuilder
 
@@ -34,7 +34,7 @@ task buildExportFile(type: NodeTask) {
 		}
 		serveBuilder.redirectErrorStream(true)
 		serveBuilder.directory(new File("$projectDir"))
-		serveProcess = serveBuilder.start()
+		Process serveProcess = serveBuilder.start()
 
 		InputStream stdout = serveProcess.getInputStream()
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
@@ -48,9 +48,17 @@ task buildExportFile(type: NodeTask) {
 		}
 
 		println "ANGULAR DEVELOPMENT SERVER STARTED"
+
+		startDevelopmentServer.ext.process = serveProcess
 	}
+}
+
+task shutdownDevelopmentServer {
+	dependsOn 'startDevelopmentServer'
 
 	doLast {
+		Process serveProcess = startDevelopmentServer.process
+
 		println "SHUTTING DOWN ANGULAR DEVELOPMENT SERVER..."
 		serveProcess.destroy()
 		serveProcess.descendants().forEach({
@@ -59,4 +67,11 @@ task buildExportFile(type: NodeTask) {
 		println "ANGULAR DEVELOPMENT SERVER STOPPED"
 	}
 }
+
+task buildExportFile(type: NodeTask) {
+	dependsOn 'npmInstall', 'startDevelopmentServer'
+
+	script = file("$projectDir/scripts/build-export.js")
+}
 buildFrontend.finalizedBy(buildExportFile)
+buildExportFile.finalizedBy(shutdownDevelopmentServer)

@@ -19,7 +19,8 @@
 					"options": {
 						"allowedCommonJsDependencies": [
 							"dxf",
-							"colormap"
+							"colormap",
+							"file-saver"
 						],
 						"outputPath": "dist/static",
 						"index": "src/index.html",
