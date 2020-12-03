@@ -11,9 +11,13 @@ node {
 }
 
 task buildFrontend(type: NpxTask) {
-	dependsOn npmInstall
+	dependsOn 'npmInstall', 'testThingy'
 	command = 'ng'
 	args = ['build', '--prod']
+}
+
+task testThingy(type: NpmTask) {
+	args = ['config', 'get', 'production']
 }
 
 task startDevelopmentServer {
@@ -72,5 +76,5 @@ task buildExportFile(type: NodeTask) {
 
 	script = file("$projectDir/scripts/build-export.js")
 }
-buildFrontend.finalizedBy(buildExportFile)
+// buildFrontend.finalizedBy(buildExportFile)
 buildExportFile.finalizedBy(shutdownDevelopmentServer)
