@@ -72,5 +72,5 @@ task buildExportFile(type: NodeTask) {
 
 	script = file("$projectDir/scripts/build-export.js")
 }
-// buildFrontend.finalizedBy(buildExportFile)
+buildFrontend.finalizedBy(buildExportFile)
 buildExportFile.finalizedBy(shutdownDevelopmentServer)
