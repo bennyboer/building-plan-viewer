@@ -1,2 +1,41 @@
 \subsection{Anforderungssammlung}
 \label{subsec:requirements}
+
+Nun wollen wir die Anforderungen für die neue Anwendung gesammelt auflisten.
+Dabei listen wir sowohl \textit{funktionale}, als auch \textit{nicht-funktionale} Anforderungen, auf.
+
+\vspace{8pt}
+
+\subsubsection{Funktionale Anforderungen}
+\label{subsubsec:functional-requirements}
+
+\begin{center}
+    \begin{supertabular}{ p{1cm}|p{3cm}|p{4cm} }
+        Nr.             & Anforderung                                   & Weitere Informationen                                                                                                                                                                            \\
+        \hline
+        \textbf{A1}     & Anzeigen einer 2-dimensionalen *.dxf Datei    & Die Anwendung soll Dateien im DXF Format laden und darstellen können.                                                                                                                            \\
+        \textbf{A2}     & Navigation in der Benutzeroberfläche          & Gerade größere Gebäudepläne können unübersichtlich sein, daher muss eine geeignete Navigation möglich sein.                                                                                      \\
+        \textbf{A2.1}   & Verschieben der Arbeitsfläche                 & Die Arbeitsfläche soll per Mausklick (linke Maustaste) und Ziehen verschoben werden können.                                                                                                      \\
+        \textbf{A2.2}   & Verkleinern und Vergrößern der Arbeitsfläche  & Die Arbeitsfläche soll mit dem Mausrad vergrößert und verkleinert werden.                                                                                                                        \\
+        \textbf{A2.2.1} & Verkleinern der Arbeitsfläche                 & Bewegung des Mausrads nach unten soll die Arbeitsfläche (den Abbildungsmaßstab) verkleinern.                                                                                                     \\
+        \textbf{A2.2.2} & Vergrößern der Arbeitsfläche                  & Bewegung des Mausrads nach oben soll die Arbeitsfläche (den Abbildungsmaßstab) vergrößern.                                                                                                       \\
+        \textbf{A3}     & Anzeige eines Clusteringergebnisses für Räume & Als Differenzierung zu anderen CAD-Viewer Programmen sollen bestimmte Räume auf Basis eines Clustering Ergebnisses gesondert hervorgehoben werden.                                               \\
+        \textbf{A4}     & Export des Gebäudeplans                       & Der Gebäudeplan und die Markierungen/Hervorhebungen durch das eingelesenen Clusteringergebnis sollen in eine Datei exportiert werden können, welche zum einfachen Teilen verschickt werden kann. \\
+    \end{supertabular}
+\end{center}
+
+\vspace{10pt}
+
+\subsubsection{Nichtfunktionale Anforderungen}
+\label{subsubsec:non-functional-requirements}
+
+\begin{center}
+    \begin{supertabular}{ p{1cm}|p{3cm}|p{4cm} }
+        Nr. & Anforderung & Weitere Informationen \\
+        \hline
+        \textbf{NA1} & Einfache und schnelle Bereitstellung/Installierbarkeit & Die Anwendung soll schnell und einfach bereitgestellt bzw. installiert werden können. Als Vergleichsmerkmale hierzu sollen die Installationszeit und Dateigrößen der untersuchte Anwendung \textit{DWG TrueView} auf demselben Rechner dienen. \\
+        \textbf{NA2} & Einfache Erweiterbarkeit und Wartbarkeit & Während der Implementierung soll vor allem auf die Möglichkeit einer späteren einfachen Erweiterung der Funktionalität geachtet werden. Außerdem soll der Quellcode durch erklärende Kommentare besser wartbar werden. \\
+        \textbf{NA3} & Übersichtliche Darstellung & Die Benutzeroberfläche wie auch die Visualisierung des Gebäudeplans sollen möglichst übersichtlich und intuitiv zu bedienen sein. \\
+        \textbf{NA4} & Ruckelfreie Navigation im Gebäudeplan & Die Arbeitsfläche/Der Gebäudeplan soll ruckelfrei über die Anwendung navigiert werden können. Konkret bedeutet das min. 30 Bilder pro Sekunde auf einem Referenzgerät (Hier nicht näher spezifiziert). \\
+    \end{supertabular}
+\end{center}
