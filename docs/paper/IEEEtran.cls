@@ -2611,7 +2611,7 @@
 \def\appendixname{Appendix}
 \def\abstractname{Abstract}
 % IEEE specific names
-\def\IEEEkeywordsname{Index Terms}
+\def\IEEEkeywordsname{Schlagworte}
 \def\IEEEproofname{Proof}
 
 
@@ -5285,7 +5285,7 @@ between column types.}%
 
 \def\IEEEkeywords{\normalfont
     \if@twocolumn
-      \@IEEEabskeysecsize\bfseries\textit{\IEEEkeywordsname}---\relax
+      \@IEEEabskeysecsize\bfseries\textit{\IEEEkeywordsname} -- \relax
     \else
       \bgroup\par\addvspace{0.5\baselineskip}\centering\@IEEEabskeysecsize\textbf{\IEEEkeywordsname}\par\addvspace{0.5\baselineskip}\egroup\quotation\@IEEEabskeysecsize
     \fi\@IEEEgobbleleadPARNLSP}
