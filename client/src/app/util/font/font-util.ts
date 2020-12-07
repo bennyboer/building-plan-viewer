@@ -1,4 +1,3 @@
-// @ts-ignore
 import * as RobotoRegular from "../../../assets/fonts/Roboto_Regular.json";
 
 /**

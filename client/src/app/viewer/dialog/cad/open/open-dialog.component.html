@@ -12,8 +12,10 @@
 
 			<mat-action-list>
 				<button mat-list-item *ngFor="let ref of references" (click)="onOpen(ref)">
-					<strong>{{ ref.name }}</strong>&nbsp;
-					<i>({{ getCreatedDateRepresentation(ref.createdTimestamp) }})</i>
+					<span class="item-layout">
+						<strong>{{ ref.name }}</strong>&nbsp;
+						<i>({{ getCreatedDateRepresentation(ref.createdTimestamp) }})</i>
+					</span>
 				</button>
 			</mat-action-list>
 		</div>

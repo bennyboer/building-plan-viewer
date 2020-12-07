@@ -59,7 +59,12 @@ export class SelectRoomMappingDialogComponent implements OnInit {
 	 * Refresh the displayed mappings.
 	 */
 	private refresh(): void {
-		this.referencePromise = this.roomMappingService.getAllForCADFileID(this.data.cadFileID);
+		this.referencePromise = this.roomMappingService.getAllForCADFileID(this.data.cadFileID).then((refs) => refs.sort((r1, r2) => {
+			const date1: Date = new Date(r1.createdTimestamp);
+			const date2: Date = new Date(r2.createdTimestamp);
+
+			return date2.getTime() - date1.getTime();
+		}));
 	}
 
 	/**

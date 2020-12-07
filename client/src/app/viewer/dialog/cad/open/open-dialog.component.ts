@@ -29,7 +29,12 @@ export class OpenDialogComponent implements OnInit {
 	 * Called on component initialization.
 	 */
 	public ngOnInit(): void {
-		this.referencePromise = this.cadFileService.getAll();
+		this.referencePromise = this.cadFileService.getAll().then((refs) => refs.sort((r1, r2) => {
+			const date1: Date = new Date(r1.createdTimestamp);
+			const date2: Date = new Date(r2.createdTimestamp);
+
+			return date2.getTime() - date1.getTime();
+		}));
 	}
 
 	/**
