@@ -63,8 +63,6 @@ export class DxfCanvasSource implements CanvasSource {
 		this.possibleRoomObjects = [];
 		this.possibleRoomObjectsShapes.clear();
 
-		await MTextHandler.init();
-
 		const totalEntityCount: number = this.dxf.entities.length;
 		let counter: number = 0;
 		const publishProgressEvery: number = Math.round(totalEntityCount / 1000);

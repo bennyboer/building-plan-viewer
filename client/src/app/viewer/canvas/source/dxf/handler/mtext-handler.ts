@@ -17,7 +17,7 @@ export class MTextHandler extends AbstractEntityHandler {
 	/**
 	 * Load the font to use for three.js.
 	 */
-	private static async loadFont(): Promise<Font> {
+	private static loadFont(): Font {
 		const loader: FontLoader = new FontLoader();
 		return loader.parse(FontUtil.ROBOTO_REGULAR);
 	}
@@ -25,15 +25,17 @@ export class MTextHandler extends AbstractEntityHandler {
 	/**
 	 * The font to use for three.js.
 	 */
-	public static font: Font;
+	private static font: Font;
 
 	/**
-	 * Initialize the handler.
+	 * Get the font to use.
 	 */
-	public static async init(): Promise<void> {
+	public static getFont(): Font {
 		if (!MTextHandler.font) {
-			MTextHandler.font = await MTextHandler.loadFont();
+			MTextHandler.font = MTextHandler.loadFont();
 		}
+
+		return MTextHandler.font;
 	}
 
 	/**

@@ -462,21 +462,23 @@ export class CanvasComponent implements OnDestroy, OnInit {
 					this.roomObjectMapping.set(shapeMesh.uuid, mapping);
 
 					// Add room name
-					const textGeometry: TextGeometry = new TextGeometry(mapping.roomName, {
-						font: MTextHandler.font,
-						height: 0,
-						size: (shapeBounds.max.y - shapeBounds.min.y) / 25
-					});
-					const textMesh: Mesh = new Mesh(textGeometry, textMaterial);
+					if (!!mapping.roomName && mapping.roomName.length > 0) {
+						const textGeometry: TextGeometry = new TextGeometry(mapping.roomName, {
+							font: MTextHandler.getFont(),
+							height: 0,
+							size: (shapeBounds.max.y - shapeBounds.min.y) / 25
+						});
+						const textMesh: Mesh = new Mesh(textGeometry, textMaterial);
 
-					const textBounds: Box3 = new Box3().setFromObject(textMesh);
+						const textBounds: Box3 = new Box3().setFromObject(textMesh);
 
-					textMesh.position.x = shapeBounds.min.x + (shapeBounds.max.x - shapeBounds.min.x) / 2 - (textBounds.max.x - textBounds.min.x) / 2;
-					textMesh.position.y = shapeBounds.min.y + (shapeBounds.max.y - shapeBounds.min.y) / 2 - (textBounds.max.y - textBounds.min.y) / 2;
-					textMesh.position.z = 1;
+						textMesh.position.x = shapeBounds.min.x + (shapeBounds.max.x - shapeBounds.min.x) / 2 - (textBounds.max.x - textBounds.min.x) / 2;
+						textMesh.position.y = shapeBounds.min.y + (shapeBounds.max.y - shapeBounds.min.y) / 2 - (textBounds.max.y - textBounds.min.y) / 2;
+						textMesh.position.z = 1;
 
-					this.scene.add(textMesh);
-					this.roomMappingObjects.push(textMesh);
+						this.scene.add(textMesh);
+						this.roomMappingObjects.push(textMesh);
+					}
 				}
 
 				i++;

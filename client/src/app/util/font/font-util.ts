@@ -1,4 +1,5 @@
-import * as RobotoRegular from "../../../assets/fonts/Roboto_Regular.json";
+// @ts-ignore
+import RobotoRegular from "../../../assets/fonts/Roboto_Regular.json";
 
 /**
  * Utility class for working with fonts.
