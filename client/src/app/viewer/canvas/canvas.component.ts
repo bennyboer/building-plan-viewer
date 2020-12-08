@@ -1021,8 +1021,8 @@ export class CanvasComponent implements OnDestroy, OnInit {
 		}
 
 		const vector: Vector2 = new Vector2(
-			(x / this.renderer.domElement.width) * 2 - 1,
-			-(y / this.renderer.domElement.height) * 2 + 1
+			(x * window.devicePixelRatio / this.renderer.domElement.width) * 2 - 1,
+			-(y * window.devicePixelRatio / this.renderer.domElement.height) * 2 + 1
 		);
 		const ray: Raycaster = new Raycaster();
 		ray.setFromCamera(vector, this.camera);
