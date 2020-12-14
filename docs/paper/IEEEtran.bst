@@ -172,7 +172,7 @@ FUNCTION {default.name.latex.cmd}{ "" }
 
 
 % The default URL prefix.
-FUNCTION {default.name.url.prefix}{ "[Online]. Available:" }
+FUNCTION {default.name.url.prefix}{ "[Online]. Verfügbar unter:" }
 
 
 % Other controls that cannot be accessed via IEEEtranBSTCTL entry type.
@@ -272,16 +272,16 @@ FUNCTION {repeated.name.dashes} { "------" }
 
 MACRO {jan} {"Jan."}
 MACRO {feb} {"Feb."}
-MACRO {mar} {"Mar."}
+MACRO {mar} {"März"}
 MACRO {apr} {"Apr."}
-MACRO {may} {"May"}
+MACRO {may} {"Mai"}
 MACRO {jun} {"Jun."}
 MACRO {jul} {"Jul."}
 MACRO {aug} {"Aug."}
 MACRO {sep} {"Sep."}
-MACRO {oct} {"Oct."}
+MACRO {oct} {"Okt."}
 MACRO {nov} {"Nov."}
-MACRO {dec} {"Dec."}
+MACRO {dec} {"Dez."}
 
 
 

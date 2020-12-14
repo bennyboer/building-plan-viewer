@@ -32,9 +32,81 @@ Es kann sich dabei beispielsweise um den lokalen Rechner eines Anwenders handeln
 \subsubsection{Detailsicht des Servers}
 \label{subsubsec:detail-server}
 
-TODO:
-- Persistenz mit JPA beschreiben
-- REST-API beschreiben (Export wird später beschrieben im Teil der Webanwendung)
+Nach dieser ersten groben Ansicht gehen wir zunächst näher auf den Server ein.
+Wie bereits erwähnt handelt es sich um eine Java-Anwendung auf Basis des Spring Frameworks.
+Der primäre Zweck ist die Bereitstellung einer REST-API zum Hochladen und Verwalten von CAD-Dateien und Raumzuordnungen.
+Zwar ließe sich die Darstellung und der Raumzuordnungsvorgang auch direkt in der Webanwendung abhandeln, jedoch ermöglicht die API eine schnellere und automatisierte Bereitstellung der CAD-Dateien und Raumzuordnungen.
+So können beispielsweise die Clusteringergebnisse und dazugehörigen Gebäudepläne bereits automatisch nach dem Clustering über ein Python-Skript - oder Ähnliches - hochgeladen werden, ohne manuell jede Datei einzeln über die Webanwendung auswählen zu müssen.
+Die Webanwendung kann die API verwenden, um die bereits hochgeladenen Dateien einzusehen und bei Bedarf herunterzuladen.
+Außerdem hat der Server noch die Funktion den Export der Webanwendung auszuführen, die er selbst bereitstellt.
+
+\begin{figure}[h]
+    \includegraphics[width=0.55\textwidth]{res/server-architecture.pdf}
+    \caption{Darstellung der Detailansicht der Serveranwendung.
+    Dabei sind die REST-Controller, welche die REST-API abbilden sowie die Persistenzschicht abgebildet.}
+    \label{fig:detail-view-server}
+\end{figure}
+
+Wir haben ein Diagramm des Feinentwurfs der Serveranwendung in Abbildung~\ref{fig:detail-view-server} dargestellt.
+Zur Linken sind dabei die REST-Controller zu finden, also Komponenten, die in einer Spring Anwendung die REST-API abbilden.
+Wir stellen dabei Schnittstellen zum Verwalten von CAD-Dateien, Raumzuordnungen und der Ausführung des Exports zur Verfügung.
+Konkret stellen wir die gebräuchlichen HTTP Methoden~\cite{MozillaHTTPMethods} zur Verfügung, insofern sie für die jeweilige Resource Sinn ergeben:
+
+\begin{enumerate}
+    \item \texttt{GET}: Gibt eine Repräsentation der angeforderten Ressource zurück (CAD-Datei, Raumzuordnung).
+    Wir stellen im Normalfall zwei Implementierungen unter verschiedenen Ressourcen-Pfaden bereit.
+    So gibt eine \texttt{GET}-Anfrage an \texttt{api/cad/} alle verfügbaren CAD-Dateien zurück, eine Anfrage an \texttt{api/cad/42} jedoch nur die Datei mit der ID 42.
+    \item \texttt{POST}: Bei dieser Methode wird meist ein Objekt übergeben, dass server-seitig gespeichert oder verändert wird.
+    Im Kontext unserer Serveranwendung bedeutet die Methode das im Body des HTTP-Requests übergebene Objekt zu erstellen und zu speichern.
+    \item \texttt{PUT}: Im Kontrast zur \texttt{POST} Methode wird hier davon ausgegangen, dass ein Objekt mit derselben Identität bereits auf dem Server vorhanden ist und mit der Payload des HTTP-Requests aktualisiert werden soll.
+    \item \texttt{DELETE}: Bei dieser Methode ist die Funktionalität im Gegenzug zu den vorangegangenen vorhersehbar.
+    Die Resource unter beispielsweise \texttt{api/cad/3}, also die CAD-Datei mit der ID 3, soll gelöscht werden.
+\end{enumerate}
+
+Des Weiteren setzen wir bei den jeweiligen Methoden auf JSON als Übertragungsformat.
+Das bedeutet, dass jegliche HTTP Aufrufe mit einer JSON-formatierten Zeichenkette im Body der HTTP-Response antworten.
+
+Die REST Controller für die CAD-Dateien und für die Raumzuordnungen sind nach den eben aufgeführten Richtlinien implementiert, mit der Ausnahme, dass der Raumzuordnungs-Controller eine weitere \texttt{GET}-Schnittstelle zum Holen alle Raumzuordnung für eine bestimmte CAD-Datei anbietet.
+Abgesehen davon stellt der Controller für den Export lediglich eine \texttt{POST}-Schnittstelle unter \texttt{api/export/html} bereit, welche den Export als HTML-Datei ausführt und die entstandene Datei zurückliefert.
+Diese Definition passt nicht ins eben diskutierte Schema, da eine \texttt{POST}-Methode das Erstellen einer neuen server-seitigen Resource bedeutet.
+Dabei handelt es sich um eine Ausnahmeentscheidung, die getroffen wurde, da die Angular Implementierung eines HTTP-Clients keine Übergabe von JSON als Payload bei der \texttt{GET}-Methode erlaubt~\cite{AngularHttpClientGet}.
+Zwar hätte man die Parameter auch in der angeforderten URL in der Form von \textit{Query Parametern} kodieren können, jedoch scheint die Kodierung umständlich und die Übergabe eines JSON-Formats eleganter.
+
+Zur Rechten im Diagramm~\ref{fig:detail-view-server} befindet sich die Persistenzschicht des Servers.
+Die REST-Controller alleine können die hochzuladenden CAD-Dateien oder Raumzuordnungen nicht speichern.
+Daher verwenden wir eine gesonderte Schicht, welche den Datenbankzugriff abstrahiert.
+Dabei spielt das Spring Framework mit der Bibliothek \textit{Spring Data} eine besondere Rolle.
+Spring Data erleichtert die Implementierung einer Datenzugriffsschicht unter Verwendung der Java Persistence API (JPA)~\cite{SpringData}.
+Konkret müssen wir lediglich die im Diagramm dargestellten Java-Objekte für CAD-Dateien und die Raumzuordnungen definieren und sogenannte Repository Interfaces erstellen.
+Die Repositories verwalten die erstellten Objekte und ermöglichen so den Datenzugriff.
+Per \textit{Dependency Injection} werden die Repositories in den REST-Controllern bei Bedarf bereitgestellt und verwendet.
+
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{res/screenshot-docs.png}
+    \caption{Screenshot der dynamisch generierten REST-API Dokumentation, welche unter \texttt{api/documentation.html} verfügbar ist.}
+    \label{fig:screenshot-docs}
+\end{figure}
+
+An dieser Stelle verzichten wir auf eine detailliertere Dokumentation der REST-API und einer Beschreibung der Objekte, da diese sich im Laufe zukünftiger Entwicklungen wahrscheinlich ändern werden.
+Als Alternative stellt die Serveranwendung eine dynamisch generierte Dokumentation in Form einer Webanwendung unter \texttt{api/documentation.html} bereit wie sie in Abbildung~\ref{fig:screenshot-docs} dargestellt ist.
+In der Dokumentation können neben den verfügbaren Schnittstellen die einzelnen Objektdefinitionen im JSON Format eingesehen werden.
+Dabei ist anzumerken, dass die Definition für das \texttt{CADFile} Objekt nicht ganz korrekt ist.
+In der Webanwendung der Dokumentation ist dort als Typ für das Attribut \texttt{data} \texttt{[string(\$byte)]} vermerkt, jedoch handelt es sich nicht um eine Liste von Zeichenketten, sondern lediglich um eine einzige Base64-kodierte Zeichenkette der CAD-Datei.
+Des Weiteren ist bei dem Attribut \texttt{charsetName} der Zeichensatz anzugeben, in welchem die Binärdaten der Datei kodiert sind, sollte es sich um eine Textdatei handeln (Beispielsweise \glqq{}utf-8\grqq{}).
+Sollte es sich nicht um eine Textdatei handeln, der \texttt{type} also etwas anderes als das aktuell einzige unterstützte Format \texttt{dxf} sein, ist der Zeichensatz nicht mit anzugeben.
+
+Weiter ist zu beachten, dass Attribute \texttt{id} und \texttt{createdTimestamp} der CAD-Datei- und Raumzuordnung-Entität generierte Werte sind.
+So müssen diese nicht bei den \texttt{POST}-Methoden der REST-API mitgegeben werden, da sie vom Server bei der Erstellung zugewiesen werden.
+
+Wir wollen abschließend noch kurz das Objekt der Raumzuordnung beleuchten.
+Die restlichen Objektdefinitionen sind aus unserer Sicht intuitiv zu verstehen.
+Die Raumzuordnung \texttt{RoomMapping} bezeichnet eine Zuordnung einer Kategorie zu einem einzelnen Raum.
+Dabei können optional weitere Angaben, wie der Raumname oder eine Beschreibung mitgegeben werden.
+Zur Zuordnung der Kategorie zu einem Raum können zwei Angaben gemacht werden: ein Mapping Vertex oder eine Liste von Vertices.
+Es ist lediglich eine der beiden Angaben zu leisten um die Zuordnung durchführen zu können.
+Bei Verwendung des Mapping Vertex versucht die Webanwendung später den Raum anhand eines einzelnen Vertex zuzuordnen, welcher sich auf der Kontur des Raums befinden muss.
+Die Liste von Vertices kann alternativ verwendet werden, um eine genauere Zuordnung zu ermöglichen, wobei die einzelnen Vertices wieder auf der Kontur des Raums liegen müssen.
+Die Raumzuordnungen werden in einer Sammel-Entität \texttt{RoomMappingCollection} für eine bestimmte CAD-Datei an die REST-Schnittstelle übermittelt.
 
 \subsubsection{Detailsicht der Webanwendung}
 \label{subsubsec:detail-webapp}

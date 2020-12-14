@@ -4361,8 +4361,8 @@ between column types.}%
 \def\rightmark{\MakeUppercase{\protect#2}}}
 
 \def\today{\ifcase\month\or
-    January\or February\or March\or April\or May\or June\or
-    July\or August\or September\or October\or November\or December\fi
+    Januar\or Februar\or März\or April\or Mai\or Juni\or
+    Juli\or August\or September\or Oktober\or November\or Dezember\fi
     \space\number\day, \number\year}
 
 
