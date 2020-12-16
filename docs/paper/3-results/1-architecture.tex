@@ -144,6 +144,7 @@ Beispielsweise eine Linie muss so in ein für die Bibliothek \textit{three.js} g
 In der \texttt{CanvasComponent} muss so lediglich das Zeichnen einer \textit{three.js} Scene unterstützt sein, unabhängig vom eigentlichen Typ der CAD-Datei.
 Die \texttt{mapToRoom} Methode ist für die Raumzuordnung zuständig, also die Zuordnung von einem \texttt{RoomMapping} auf ein tatsächliches \textit{three.js} Objekt anhand der in der Raumzuordnung vorhandenen Attribute \texttt{mappingVertex} oder \texttt{vertices}.
 Zwar ist die Zuordnung unabhängig vom CAD-Dateityp, allerdings ist es leicht vorstellbar, dass bestimmte Dateitypen anhand ihrer Metadaten den Mappingvorgang besser durchführen können (z. B. anhand des Raumnamens oder der Beschreibung).
+Die Zuordnung wird im Abschnitt~\ref{subsubsec:room-mapping} im Detail behandelt.
 
 Die \texttt{CanvasSource} ist nicht plötzlich vorhanden.
 Sie muss beim Öffnen einer CAD-Datei erstellt werden.
@@ -177,4 +178,31 @@ Die exportierte Datei kann so beispielsweise per E-Mail an andere Anwender getei
 \subsubsection{Raumzuordnung}
 \label{subsubsec:room-mapping}
 
-TODO: Wie geht die Raumzuordnung von statten?
+Ein weiteres Thema, das wir dokumentieren wollen, ist der Raumzuordnungs-Prozess.
+Wir haben bereits behandelt, dass die vorhandenen Informationen zur Zuordnung die Attribute \texttt{mappingVertex} oder \texttt{vertices} der Raummapping Objekte sind.
+Der einzelne Vertex sollte in den meisten Fällen ausreichen, um einen Raum korrekt zuzuordnen.
+Voraussetzung dafür ist, dass die gegebene Koordinate nur auf der Kontur des zuzuordnenden Raums liegt.
+Liegt die Koordinate auf mehreren Raumkonturen kann der Algorithmus keine eindeutige Aussage treffen.
+Daher gibt es neben dem einzelnen Vertex auch die Möglichkeit mit dem Attribut \texttt{vertices} mehrere Vertices anzugeben.
+Je mehr Vertices angegeben werden, die auf der Raumkontur liegen, desto wahrscheinlicher ist eine erfolgreiche Zuordnung.
+
+Die Zuordnung an sich wird mehrstufig durchgeführt, um möglichst robuste Ergebnisse zu liefern.
+Das bedeutet, dass verschiedene Methoden nacheinander versuchen die Zuordnung vorzunehmen.
+Dabei ist die erste Methode das sogenannte \textit{Raycasting} mit \textit{three.js}.
+Damit kann geprüft werden, ob Objekte sich mit einer gedachten Linie auf der \(Z\)-Achse (senkrecht zum Gebäudeplan) schneiden~\cite{Raycaster}.
+Falls nur ein Vertex gegeben ist, wird das Raycasting für nur diesen Punkt durchgeführt.
+Wird kein Ergebnis zurückgeliefert oder kein eindeutiges, ist die Zuordnung gescheitert.
+Anders bei der Liste an Vertices: hier kann bei einem nicht eindeutigen Ergebnis der nächste Punkt probiert werden.
+Schritt für Schritt werden so die Schnittpunkt-Objekte eliminiert, bis nur noch das Ergebnisobjekt der Zuordnung übrig bleibt.
+Scheitert auch diese Methode wird ein Hashcode für die Liste an Vertices berechnet.
+Dieser Hashcode wird als Schlüssel zum Lookup in einer Hashmap verwendet, welche bereits vorberechnete Hashcodes aller möglichen Räume vorhält.
+Außerdem sind die vorberechneten Hashcodes bereits auf Objekte der Räume zugeordnet.
+Diese Methode hat in unseren Experimenten gut funktioniert, allerdings unter der Voraussetzung, dass die Liste der Vertices genau der entspricht, die in der CAD-Datei vorliegen.
+Daher befindet sich das Hashcode Mapping nur an zweiter Stelle in der Methodenliste.
+Sollte auch die zweite Methode keine Zuordnung durchführen können, so nehmen wir an, dass die Liste an Vertices bereits einer ausreichenden Beschreibung des Raums entspricht.
+Dementsprechend zeichnen wir auf Basis der Vertices ein Polygon über den Gebäudeplan.
+Das hat den Nachteil, dass eventuell vorhandene Rundungen der Raumkontur nicht beachtet werden.
+
+Die bisher betrachteten Zuordnungsmethoden sind unabhängig von der CAD-Datei, allerdings nicht absolut zuverlässig.
+Unglücklicherweise hat das DXF-Format keine weiteren Metainformationen zu einzelnen \glqq{}Entitäten\grqq{}, wie zum Beispiel Linien, zugeordnet.
+Es ist allerdings vorstellbar, dass andere CAD-Dateiformate weitere Informationen bereitstellen und so beispielsweise eine Zuordnung anhand des Raumnamens ermöglichen.
