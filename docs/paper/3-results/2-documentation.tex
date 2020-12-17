@@ -2,5 +2,38 @@
 \label{subsec:documentation}
 
 Nachdem wir die Details der Architektur beleuchtet haben, wollen wir die Anwendung des CAD-Viewers aus Benutzersicht dokumentieren.
+Die gestartete Anwendung ist standardmäßig unter Port \texttt{8080} erreichbar und stellt sich wie in Screenshot~\ref{fig:app-screenshot} dar.
 
-TODO: Dokumentation der Anwendung auf Anwendersicht - Anwendungsbeispiel
+\begin{figure}[h]
+    \includegraphics[width=0.5\textwidth]{res/app-screenshot.png}
+    \caption{Screenshot der Startansicht der CAD-Viewer Anwendung.}
+    \label{fig:app-screenshot}
+\end{figure}
+
+In der Grafik ist die Startansicht zu sehen.
+Diese umfasst die eigentliche Arbeitsfläche mit einleitenden Aktionen \glqq{}Datei öffnen\grqq{} und \glqq{}Datei hochladen\grqq{} sowie die Steuerungskomponente, welche in jedem Zustand der Webanwendung sichtbar ist.
+Die einzelnen Steuerungsmöglichkeiten sind auch nochmal in Abbildung~\ref{fig:controls-component} dargestellt, wobei den einzelnen Icons jeweils eine Zahl zugeordnet ist.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\textwidth]{res/controls.pdf}
+    \caption{Steuerungskomponente des Viewer-Programms.}
+    \label{fig:controls-component}
+\end{figure}
+
+Anhand der Zuordnung beschreiben wir die einzelnen Möglichkeiten:
+
+\begin{enumerate}
+    \item \textbf{Datei öffnen}: Der Knopf öffnet einen Dialog zur Auswahl einer CAD-Datei.
+    Dabei werden alle bereits hochgeladenen Dateien angezeigt.
+    \item \textbf{Datei hochladen}: Ist noch keine CAD-Datei hochgeladen, kann auch keine in der Anwendung dargestellt werden.
+    In diesem Fall muss zuerst eine geeignete Datei mit dem Hochladen-Dialog geöffnet werden.
+    \item \textbf{Exportieren}: Mit diesem Knopf wird die aktuell gezeichnete CAD-Datei und optional die aktuell ausgewählte Raumzuordnung als HTML Datei exportiert und im Browser heruntergeladen.
+    \item \textbf{Raumzuordnungen verwalten}: Der Knopf ist nur aktiviert, wenn eine CAD-Datei geöffnet ist.
+    Ist das der Fall, öffnet sich ein Dialog zum Auswählen oder Hochladen von Raumzuordnungen.
+    Nach der Auswahl wird die entsprechende Zuordnung über dem Gebäudeplan gezeichnet.
+    \item \textbf{Viewport zurücksetzen}: Die Anwendung bietet vielfältige Optionen das Sichtfeld zu manipulieren, sei es durch Zoomen mit dem Mausrad oder dem Verschieben mit der Maus.
+    Mit dem Knopf wird das Sichtfeld auf dem Ausgangszustand zurückgesetzt.
+    \item \textbf{Wechselknopf helles-/dunkles Thema}: 
+\end{enumerate}
+
