@@ -21,6 +21,8 @@
 # *.eps
 /*.pdf
 
+/res/confidential-*.png
+
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
 *.bcf

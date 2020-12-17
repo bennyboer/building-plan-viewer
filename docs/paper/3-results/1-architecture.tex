@@ -107,6 +107,9 @@ Es ist lediglich eine der beiden Angaben zu leisten um die Zuordnung durchführe
 Bei Verwendung des Mapping Vertex versucht die Webanwendung später den Raum anhand eines einzelnen Vertex zuzuordnen, welcher sich auf der Kontur des Raums befinden muss.
 Die Liste von Vertices kann alternativ verwendet werden, um eine genauere Zuordnung zu ermöglichen, wobei die einzelnen Vertices wieder auf der Kontur des Raums liegen müssen.
 Die Raumzuordnungen werden in einer Sammel-Entität \texttt{RoomMappingCollection} für eine bestimmte CAD-Datei an die REST-Schnittstelle übermittelt.
+Dabei ist die Reihenfolge der Raumzuordnungs-Objekte in der Sammel-Entität zu beachten.
+Die erste Zuordnung in der Liste wird in der Webanwendung zuerst gezeichnet, die letzte zuletzt.
+Sollten sich also mehrere Raumzuordnungen für denselben Raum in der Liste befinden, werden beide übereinander gezeichnet, wobei die letztere über die erste gezeichnet wird.
 
 \subsubsection{Detailsicht der Webanwendung}
 \label{subsubsec:detail-webapp}
