@@ -1,6 +1,10 @@
 \section{Zusammenfassung und Fazit}
 \label{sec:summary}
 
-TODO: Zusammenfassung/Fazit/Ausblick
+Wir haben im Laufe des Projekts eine Webanwendung erstellt, mit welcher die im Forschungsprojekt \glqq{}NuData Campus\grqq{} erhaltenen Clustering-Ergebnisse geeignet visualisiert werden können.
+Die exportierte Webanwendung mitsamt CAD-Datei und Raumzuordnung kann außerdem per HTML Datei mit beteiligte Personen geteilt werden.
 
-- Vorschläge für die Weiterentwicklung (Parser Library erweitern um das Parsen der ATTRIB Entitäten, sodass auch mit dem Vertex der Annotationspostion der Raum zugeordnet werden kann -> Ist nicht auf der Raumkontur und überschneidet sich daher nicht mit anderen Linien -> besseres Mapping)
+Während der Entwicklung ist besonders auf die Erweiterbarkeit der Anwendung geachtet worden, sodass auch in Zukunft nötige Änderungen vorgenommen werden können.
+Eine konkrete Verbesserung wäre die Erweiterung der verwendeten DXF-Parser Bibliothek um das Parsen der sogenannten \texttt{ATTRIB} Entitäten.
+Die Erweiterung ermögliche die Raumzuordnung anhand der in der DXF-Datei festgesetzten Annotationspositionen pro Raum.
+Diese Annotationen sind in den meisten Fällen innerhalb der Räume und erlauben zumindest in diesen Fällen eine Zuordnung.
