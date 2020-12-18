@@ -22,9 +22,9 @@ Daher befindet sich die exportierte Webanwendung ebenso im Bereich des Browsers.
 
 Auf der anderen Seite des Diagramms ist die Serveranwendung zu finden, welche über eine REST-API angesprochen wird.
 Der Server stellt neben seinen Schnittstellen auch die Webanwendung bereit.
-Ebenso ist eine In-memory Datenbank darunter dargestellt auf welcher die hochgeladenen CAD-Dateien und Raumzuordnungen flüchtig gespeichert werden.
+Ebenso ist eine In-memory Datenbank darunter dargestellt, auf welcher die hochgeladenen CAD-Dateien und Raumzuordnungen flüchtig gespeichert werden.
 Wir haben uns für eine flüchtige Speicherung entschieden, da aus unserer Sicht kein Mehrwert durch die Persistierung entstünde.
-Nichtsdestotrotz kann die verwendete Datenbank auch im Nachhinein mittels Kommandozeilenparameter wie \texttt{--spring.datasource.url} konfiguriert werden~\cite{JDBCSpringBoot}.
+Nichtsdestotrotz kann die verwendete Datenbank auch im Nachhinein mittels Kommandozeilenparameter wie \texttt{--spring.datasource.url} umkonfiguriert werden, um so auch nicht-flüchtige Datenbanken anzubinden~\cite{JDBCSpringBoot}.
 
 Während die Webanwendung klar im Browser des Anwenders läuft, ist das Laufzeitsystem des Servers unbestimmt.
 Es kann sich dabei beispielsweise um den lokalen Rechner eines Anwenders handeln, eine VM oder eine Docker Container.
@@ -49,7 +49,7 @@ Außerdem hat der Server noch die Funktion den Export der Webanwendung auszufüh
 
 Wir haben ein Diagramm des Feinentwurfs der Serveranwendung in Abbildung~\ref{fig:detail-view-server} dargestellt.
 Zur Linken sind dabei die REST-Controller zu finden, also Komponenten, die in einer Spring Anwendung die REST-API abbilden.
-Wir stellen dabei Schnittstellen zum Verwalten von CAD-Dateien, Raumzuordnungen und der Ausführung des Exports zur Verfügung.
+Wir stellen dabei Schnittstellen zur Verwaltung von CAD-Dateien, Raumzuordnungen und der Ausführung des Exports zur Verfügung.
 Konkret stellen wir die gebräuchlichen HTTP Methoden~\cite{MozillaHTTPMethods} zur Verfügung, insofern sie für die jeweilige Resource Sinn ergeben:
 
 \begin{enumerate}
@@ -70,7 +70,7 @@ Die REST Controller für die CAD-Dateien und für die Raumzuordnungen sind nach 
 Abgesehen davon stellt der Controller für den Export lediglich eine \texttt{POST}-Schnittstelle unter \texttt{api/export/html} bereit, welche den Export als HTML-Datei ausführt und die entstandene Datei zurückliefert.
 Diese Definition passt nicht ins eben diskutierte Schema, da eine \texttt{POST}-Methode das Erstellen einer neuen server-seitigen Resource bedeutet.
 Dabei handelt es sich um eine Ausnahmeentscheidung, die getroffen wurde, da die Angular Implementierung eines HTTP-Clients keine Übergabe von JSON als Payload bei der \texttt{GET}-Methode erlaubt~\cite{AngularHttpClientGet}.
-Zwar hätte man die Parameter auch in der angeforderten URL in der Form von \textit{Query Parametern} kodieren können, jedoch scheint die Kodierung umständlich und die Übergabe eines JSON-Formats eleganter.
+Zwar hätte man die Parameter auch in der angeforderten URL in der Form von \textit{Query Parametern} kodieren können, jedoch scheint die Kodierung umständlich und die Übergabe einer JSON-formatierten Zeichenkette eleganter.
 
 Zur Rechten im Diagramm~\ref{fig:detail-view-server} befindet sich die Persistenzschicht des Servers.
 Die REST-Controller alleine können die hochzuladenden CAD-Dateien oder Raumzuordnungen nicht speichern.
@@ -91,7 +91,7 @@ An dieser Stelle verzichten wir auf eine detailliertere Dokumentation der REST-A
 Als Alternative stellt die Serveranwendung eine dynamisch generierte Dokumentation in Form einer Webanwendung unter \texttt{api/documentation.html} bereit wie sie in Abbildung~\ref{fig:screenshot-docs} dargestellt ist.
 In der Dokumentation können neben den verfügbaren Schnittstellen die einzelnen Objektdefinitionen im JSON Format eingesehen werden.
 Dabei ist anzumerken, dass die Definition für das \texttt{CADFile} Objekt nicht ganz korrekt ist.
-In der Webanwendung der Dokumentation ist dort als Typ für das Attribut \texttt{data} \texttt{[string(\$byte)]} vermerkt, jedoch handelt es sich nicht um eine Liste von Zeichenketten, sondern lediglich um eine einzige Base64-kodierte Zeichenkette der CAD-Datei.
+In der Webanwendung der Dokumentation ist dort als Typ für das Attribut \texttt{data} \texttt{[string(\$byte)]} vermerkt, jedoch handelt es sich nicht um eine Liste von Zeichenketten, sondern lediglich um eine einzige Base64-kodierte Zeichenkette des CAD-Dateiinhalts.
 Des Weiteren ist bei dem Attribut \texttt{charsetName} der Zeichensatz anzugeben, in welchem die Binärdaten der Datei kodiert sind, sollte es sich um eine Textdatei handeln (Beispielsweise \glqq{}utf-8\grqq{}).
 Sollte es sich nicht um eine Textdatei handeln, der \texttt{type} also etwas anderes als das aktuell einzige unterstützte Format \texttt{dxf} sein, ist der Zeichensatz nicht mit anzugeben.
 
@@ -143,7 +143,7 @@ Es muss also lediglich eine neue \texttt{CanvasSource} für eine neuen Dateityp 
 Dabei kann sich ein Beispiel an der bereits implementierten Quelle für DXF Dateien genommen werden.
 Um den Vertrag des Interfaces zu halten, müssen zwei Methoden \texttt{draw} und \texttt{mapToRoom} umgesetzt werden.
 Die Methode zum Zeichnen soll die verschiedenen Bestandteile der CAD-Datei auf eine \textit{three.js} Scene zeichnen.
-Beispielsweise eine Linie muss so in ein für die Bibliothek \textit{three.js} geeignete Repräsentation umgewandelt werden.
+Beispielsweise eine Linie muss so in eine für die Bibliothek \textit{three.js} geeignete Repräsentation umgewandelt werden.
 In der \texttt{CanvasComponent} muss so lediglich das Zeichnen einer \textit{three.js} Scene unterstützt sein, unabhängig vom eigentlichen Typ der CAD-Datei.
 Die \texttt{mapToRoom} Methode ist für die Raumzuordnung zuständig, also die Zuordnung von einem \texttt{RoomMapping} auf ein tatsächliches \textit{three.js} Objekt anhand der in der Raumzuordnung vorhandenen Attribute \texttt{mappingVertex} oder \texttt{vertices}.
 Zwar ist die Zuordnung unabhängig vom CAD-Dateityp, allerdings ist es leicht vorstellbar, dass bestimmte Dateitypen anhand ihrer Metadaten den Mappingvorgang besser durchführen können (z. B. anhand des Raumnamens oder der Beschreibung).
@@ -152,7 +152,7 @@ Die Zuordnung wird im Abschnitt~\ref{subsubsec:room-mapping} im Detail behandelt
 Die \texttt{CanvasSource} ist nicht plötzlich vorhanden.
 Sie muss beim Öffnen einer CAD-Datei erstellt werden.
 Da dieser Prozess wieder vom Dateityp der CAD-Datei abhängig ist, gibt es ein weiteres Interface \texttt{CanvasSourceReader}.
-Die Implementierungen für die verschiedenen Dateitypen werden in der Datei \texttt{CanvasSourceReaders} in eine Hashmap gelegt und können per Dateityp geholt werden.
+Die Implementierungen für die verschiedenen Dateitypen werden in der Klasse \texttt{CanvasSourceReaders} in eine Hashmap gelegt und können per Dateityp geholt werden.
 Beim Öffnen einer Datei wird ein geeigneter \glqq{}Leser\grqq{} aus der Map geholt und auf den Inhalt der CAD-Datei angewandt, was eine \texttt{CanvasSource} vom richtigen Typ zurückliefert.
 Zusammenfassend ist die \texttt{CanvasComponent} vollständig unabhängig vom verwendeten Dateityp und erlaubt so eine einfache Erweiterung.
 
@@ -166,7 +166,7 @@ Dabei enthält die exportierte HTML-Datei die gesamte Webanwendung und zusätzli
 Die größte Herausforderung stellt hierbei sicherlich die Bereitstellung der gesamten Webanwendung als HTML Datei dar.
 Normalerweise bestehen Webanwendungen aus vielen Dateien.
 Vorstellbar sind beispielsweise Cascading Stylesheets, JavaScript-Dateien, HTML-Dateien, Bilder, Schriftarten und viele mehr.
-Glücklicherweise gibt es bereits das Programm \glqq{}inliner\grqq{}, welches genau diese Aufgabe übernimmt~\cite{Inliner}.
+Glücklicherweise gibt es bereits das Programm \glqq{}inliner\grqq{}, welches genau diese Aufgabe übernimmt und alle Ressourcen einer Webanwendung in nur eine HTML Datei verpackt~\cite{Inliner}.
 Allerdings muss dafür die Webanwendung bereits mit einem HTTP Server bereitgestellt sein.
 Daher modifizieren wir unseren Buildprozess dahingehend, dass bei jedem Build der Anwendung nun ein kleiner HTTP Server hochgefahren wird, die Webanwendung dort bereitgestellt, das Programm \glqq{}inliner\grqq{} eine HTML Datei erzeugt und der Server wieder heruntergefahren wird.
 Die erzeugte HTML-Datei enthält nun die gesamte Export-Webanwendung und kann nun wie die ursprünglich gebaute Webanwendung von unserer Serveranwendung bereitgestellt werden.
@@ -192,7 +192,7 @@ Je mehr Vertices angegeben werden, die auf der Raumkontur liegen, desto wahrsche
 Die Zuordnung an sich wird mehrstufig durchgeführt, um möglichst robuste Ergebnisse zu liefern.
 Das bedeutet, dass verschiedene Methoden nacheinander versuchen die Zuordnung vorzunehmen.
 Dabei ist die erste Methode das sogenannte \textit{Raycasting} mit \textit{three.js}.
-Damit kann geprüft werden, ob Objekte sich mit einer gedachten Linie auf der \(Z\)-Achse (senkrecht zum Gebäudeplan) schneiden~\cite{Raycaster}.
+Damit kann geprüft werden, ob Objekte sich mit einer gedachten Linie auf der \(Z\)-Achse (senkrecht zur Gebäudeplanebene) schneiden~\cite{Raycaster}.
 Falls nur ein Vertex gegeben ist, wird das Raycasting für nur diesen Punkt durchgeführt.
 Wird kein Ergebnis zurückgeliefert oder kein eindeutiges, ist die Zuordnung gescheitert.
 Anders bei der Liste an Vertices: hier kann bei einem nicht eindeutigen Ergebnis der nächste Punkt probiert werden.
@@ -205,6 +205,8 @@ Daher befindet sich das Hashcode Mapping nur an zweiter Stelle in der Methodenli
 Sollte auch die zweite Methode keine Zuordnung durchführen können, so nehmen wir an, dass die Liste an Vertices bereits einer ausreichenden Beschreibung des Raums entspricht.
 Dementsprechend zeichnen wir auf Basis der Vertices ein Polygon über den Gebäudeplan.
 Das hat den Nachteil, dass eventuell vorhandene Rundungen der Raumkontur nicht beachtet werden.
+Allerdings können so auch indirekt Markierungen vorgenommen werden, die nicht unbedingt einem Raum entsprechen.
+Beispielsweise ein Rechteck für einen Teil eines Raums.
 
 Die bisher betrachteten Zuordnungsmethoden sind unabhängig von der CAD-Datei, allerdings nicht absolut zuverlässig.
 Unglücklicherweise hat das DXF-Format keine weiteren Metainformationen zu einzelnen \glqq{}Entitäten\grqq{}, wie zum Beispiel Linien, zugeordnet.

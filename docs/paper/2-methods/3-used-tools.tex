@@ -5,17 +5,17 @@ Nun, da die Anforderungen festgelegt sind, sind wir in der Lage Entscheidungen �
 Im ersten Schritt wollen wir uns um eine Auflistung und Argumentation der verwendeten Technologien kümmern.
 
 Nachdem zum Beispiel die verwendete Programmiersprache festgelegt ist, wird unter anderem eine Bibliothek für das Lesen von CAD-Dateien gesucht.
-Die verschiedenen Möglichkeiten werden gesammelt und anschließend verglichen, um die bestmöglichen Voraussetzungen für die weitere Entwicklung der Anwendung zu schaffen.
+Die verschiedenen Möglichkeiten werden gesammelt und anschließend verglichen, um bestmögliche Voraussetzungen für die weitere Entwicklung der Anwendung zu schaffen.
 
 \subsubsection{Auflistung und Argumentation der verwendeten Technologien}
 \label{subsec:collection-tools}
 
 Im vorangegangenen Vergleich von CAD-Viewer Programmen haben wir zwei grobe Kategorien von Programmen betrachtet: \textit{web-basierte} und \textit{klassische Desktopanwendungen}.
-Beide Varianten können mit denselben Features aufwarten und unterscheiden sich somit lediglich in der Art der Bereitstellung:
+Beide Varianten können mit denselben Merkmalen aufwarten und unterscheiden sich somit lediglich in der Art der Bereitstellung.
 Während die web-basierten Anwendungen durch die Eingabe einer URL in der Adresszeile eines Browsers gestartet werden können, müssen die Desktopprogramme lokal auf dem System des Benutzers installiert und gestartet werden.
 
 Anhand der nichtfunktionale Anforderung \textbf{NA1} (\textit{Einfache und schnelle Bereitstellung/Installierbarkeit}) tendieren wir daher eher zu einer Webanwendung.
-Diese sind tendenziell schneller zu verwenden und leichter zu teilen.
+Diese sind tendenziell schneller zu starten und leichter zu teilen.
 Außerdem stehen geeignete Browser praktisch jedem Endanwender zur Verfügung - selbst auf dem Smartphone.
 
 Im Gegensatz dazu verleitet die nichtfunktionale Anforderung \textbf{NA4} (\textit{Ruckelfreie Navigation im Gebäudeplan}) eher dazu, die Gegenseite der klassischen Desktopanwendungen zu befürworten.
@@ -25,10 +25,10 @@ Allerdings gab es in den letzten Jahren deutliche Performanceverbesserungen~\cit
 Beispielsweise gibt es speziell für das Rendering von Visualisierungen mittlerweile Unterstützung durch die vorhandene Grafikhardware des Benutzers, auf welche mit Hilfe der \textit{WebGL} API zugegriffen werden kann~\cite{WebAppMolecular}.
 
 Da mit der zu entwickelnden Anwendung möglichst auch äußerst komplexe und große Gebäudepläne dargestellt werden sollen, ist es sinnvoll ebenso auf der WebGL API aufzusetzen.
-Vorhandene JavaScript Bibliotheken wie \textit{three.js}~\cite{ThreeJS} kapseln die WebGL API auf einer höheren Ebene, um diese schnell und einfach zu verwenden.
+Vorhandene JavaScript Bibliotheken wie \textit{three.js}~\cite{ThreeJS} abstrahieren die WebGL API auf einer höheren Ebene, um diese schnell und einfach zu verwenden.
 Das ist für unser Projekt ebenfalls wichtig, da die nichtfunktionale Anforderung \textbf{NA2} eine einfache Wartbarkeit fordert.
 Die WebGL API ist an OpenGL ES 2.0 angelehnt und daher nur mit dem nötigen Hintergrundwissen zu verwenden~\cite{WebGL}.
-Die Bibliothek three.js scheint daher geeignet für das Projekt, um eine spätere gute Wartbarkeit sicherzustellen.
+Die Bibliothek three.js scheint daher geeignet für das Projekt, um eine spätere einfache Wartbarkeit sicherzustellen.
 
 JavaScript ist eine dynamisch typisierte Programmiersprache.
 Alternativen wie \textit{TypeScript} von Microsoft hingegen versuchen eine statische Typisierung um JavaScript zu ermöglichen~\cite{ToTypeOrNotToType}.
@@ -38,7 +38,7 @@ Um die Wartbarkeit unseres Projekts weiter zu erhöhen, soll daher TypeScript al
 Die Entwicklung einer Webanwendung kann durch die Verwendung eines geeigneten Frameworks vereinfacht werden.
 Wir haben uns für das Framework \textit{Angular}~\cite{Angular} entschieden, da dieses bereits alle benötigten Komponenten für eine moderne UI mitliefert~\cite{AngularMaterial} und standardmäßig mit TypeScript zu verwenden ist.
 
-Eine Webanwendung benötigt einen HTTP-Server, welche diese bereitstellt.
+Des Weiteren benötigt eine Webanwendung einen HTTP-Server zur Bereitstellung.
 Ebenfalls soll die Anwendung nach Anforderung A5 eine REST-API bereitstellen, über welche die Raummappings (Clusteringergebnisse) und CAD Dateien hochgeladen werden können.
 Für die REST-Schnittstelle ist ebenfalls ein \glqq{}Backend\grqq{} nötig.
 Wir verwenden das \textit{Spring Framework} zur Entwicklung einer solchen Serveranwendung, da dort bereits zahlreiche Bibliotheken zur Erweiterung existieren~\cite{SpringFramework}.
@@ -126,8 +126,8 @@ Wie aus Tabelle~\ref{table:test-results} ersichtlich ist, reichen fünf Messunge
 
 In der folgenden Tabelle~\ref{table:nutzwert} werden die einzelnen Kriterien für die Bibliotheken bewertet.
 Um eine möglichst zutreffende Einschätzung zu erhalten, wird eine Nutzwertanalyse durchgeführt.
-Für alle Kriterien außer Lizenz werden die Punkte 1 - 4 vergeben.
-Die Lizenz erhält entweder 0 (Nicht in Ordnung) oder 1 (In Ordnung).
+Für alle Kriterien außer der Lizenz werden die Punkte 1 - 4 vergeben.
+Die Lizenz erhält stattdessen entweder die Punkte 0 (Nicht in Ordnung) oder 1 (In Ordnung).
 Am Ende werden die Punkte, welche sich in der Tabelle neben jeder Einschätzung in Klammern befinden, aufsummiert und die geeigneteste Bibliothek ausgewertet.
 
 \begin{center}
@@ -151,5 +151,5 @@ Es wird also die Bibliothek \textbf{dxf} ausgewählt, da diese die höchste Punk
 Ein Blick in die Tabelle zeigt, dass lediglich die Performance bei dieser Bibliothek geringer ist, als bei \textit{Dxf-Parser} oder \textit{dxf2svg}.
 Allerdings handelt es sich hier um einen sehr geringen Unterschied von wenigen Millisekunden, wodurch dieser nicht weiter ins Gewicht fällt.
 
-Somit stehen schlussendlich die verwendeten Werkzeuge für die zu entwickelnde Anwendung für Gebäudevisualisierungen fest.
+Somit stehen schlussendlich die verwendeten Werkzeuge für die zu entwickelnde Anwendung fest.
 
