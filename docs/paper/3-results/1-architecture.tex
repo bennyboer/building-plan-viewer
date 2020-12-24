@@ -1,7 +1,7 @@
 \subsection{Architektur}
 \label{subsec:architecture}
 
-Die Entwicklung eines Softwaresystem ist ein komplexes Unterfangen und oft nicht mehr überschaubar.
+Die Entwicklung eines Softwaresystems ist ein komplexes Unterfangen und oft nicht mehr überschaubar.
 Daher wollen wir bei der Darstellung der Architektur auf einer Makroebene beginnen und nachfolgend einige Details beleuchten.
 Am Ende soll dadurch ein detailliertes Verständnis der Anwendung möglich sein.
 
@@ -22,12 +22,12 @@ Daher befindet sich die exportierte Webanwendung ebenso im Bereich des Browsers.
 
 Auf der anderen Seite des Diagramms ist die Serveranwendung zu finden, welche über eine REST-API angesprochen wird.
 Der Server stellt neben seinen Schnittstellen auch die Webanwendung bereit.
-Ebenso ist eine In-memory Datenbank darunter dargestellt, auf welcher die hochgeladenen CAD-Dateien und Raumzuordnungen flüchtig gespeichert werden.
+Ebenso ist eine In-Memory Datenbank darunter dargestellt, auf welcher die hochgeladenen CAD-Dateien und Raumzuordnungen flüchtig gespeichert werden.
 Wir haben uns für eine flüchtige Speicherung entschieden, da aus unserer Sicht kein Mehrwert durch die Persistierung entstünde.
 Nichtsdestotrotz kann die verwendete Datenbank auch im Nachhinein mittels Kommandozeilenparameter wie \texttt{--spring.datasource.url} umkonfiguriert werden, um so auch nicht-flüchtige Datenbanken anzubinden~\cite{JDBCSpringBoot}.
 
 Während die Webanwendung klar im Browser des Anwenders läuft, ist das Laufzeitsystem des Servers unbestimmt.
-Es kann sich dabei beispielsweise um den lokalen Rechner eines Anwenders handeln, eine VM oder eine Docker Container.
+Es kann sich dabei beispielsweise um den lokalen Rechner eines Anwenders handeln, eine VM oder einen Docker Container.
 
 \subsubsection{Detailsicht des Servers}
 \label{subsubsec:detail-server}
@@ -35,7 +35,7 @@ Es kann sich dabei beispielsweise um den lokalen Rechner eines Anwenders handeln
 Nach dieser ersten groben Ansicht gehen wir zunächst näher auf den Server ein.
 Wie bereits erwähnt handelt es sich um eine Java-Anwendung auf Basis des Spring Frameworks.
 Der primäre Zweck ist die Bereitstellung einer REST-API zum Hochladen und Verwalten von CAD-Dateien und Raumzuordnungen.
-Zwar ließe sich die Darstellung und der Raumzuordnungsvorgang auch direkt in der Webanwendung abhandeln, jedoch ermöglicht die API eine schnellere und automatisierte Bereitstellung der CAD-Dateien und Raumzuordnungen.
+Zwar ließe sich der Darstellungs- und der Raumzuordnungsvorgang auch direkt in der Webanwendung abhandeln, jedoch ermöglicht die API eine schnellere und automatisierte Bereitstellung der CAD-Dateien und Raumzuordnungen.
 So können beispielsweise die Clusteringergebnisse und dazugehörigen Gebäudepläne bereits automatisch nach dem Clustering über ein Python-Skript - oder Ähnliches - hochgeladen werden, ohne manuell jede Datei einzeln über die Webanwendung auswählen zu müssen.
 Die Webanwendung kann die API verwenden, um die bereits hochgeladenen Dateien einzusehen und bei Bedarf herunterzuladen.
 Außerdem hat der Server noch die Funktion den Export der Webanwendung auszuführen, die er selbst bereitstellt.
@@ -50,7 +50,7 @@ Außerdem hat der Server noch die Funktion den Export der Webanwendung auszufüh
 Wir haben ein Diagramm des Feinentwurfs der Serveranwendung in Abbildung~\ref{fig:detail-view-server} dargestellt.
 Zur Linken sind dabei die REST-Controller zu finden, also Komponenten, die in einer Spring Anwendung die REST-API abbilden.
 Wir stellen dabei Schnittstellen zur Verwaltung von CAD-Dateien, Raumzuordnungen und der Ausführung des Exports zur Verfügung.
-Konkret stellen wir die gebräuchlichen HTTP Methoden~\cite{MozillaHTTPMethods} zur Verfügung, insofern sie für die jeweilige Resource Sinn ergeben:
+Konkret stellen wir die gebräuchlichen HTTP-Methoden~\cite{MozillaHTTPMethods} zur Verfügung, insofern sie für die jeweilige Ressource Sinn ergeben:
 
 \begin{enumerate}
     \item \texttt{GET}: Gibt eine Repräsentation der angeforderten Ressource zurück (CAD-Datei, Raumzuordnung).
@@ -60,15 +60,15 @@ Konkret stellen wir die gebräuchlichen HTTP Methoden~\cite{MozillaHTTPMethods} 
     Im Kontext unserer Serveranwendung bedeutet die Methode das im Body des HTTP-Requests übergebene Objekt zu erstellen und zu speichern.
     \item \texttt{PUT}: Im Kontrast zur \texttt{POST} Methode wird hier davon ausgegangen, dass ein Objekt mit derselben Identität bereits auf dem Server vorhanden ist und mit der Payload des HTTP-Requests aktualisiert werden soll.
     \item \texttt{DELETE}: Bei dieser Methode ist die Funktionalität im Gegenzug zu den vorangegangenen vorhersehbar.
-    Die Resource unter beispielsweise \texttt{api/cad/3}, also die CAD-Datei mit der ID 3, soll gelöscht werden.
+    Die Ressource unter beispielsweise \texttt{api/cad/3}, also die CAD-Datei mit der ID 3, soll gelöscht werden.
 \end{enumerate}
 
 Des Weiteren setzen wir bei den jeweiligen Methoden auf JSON als Übertragungsformat.
-Das bedeutet, dass jegliche HTTP Aufrufe mit einer JSON-formatierten Zeichenkette im Body der HTTP-Response antworten.
+Das bedeutet, dass jegliche HTTP-Aufrufe mit einer JSON-formatierten Zeichenkette im Body der HTTP-Response antworten.
 
-Die REST Controller für die CAD-Dateien und für die Raumzuordnungen sind nach den eben aufgeführten Richtlinien implementiert, mit der Ausnahme, dass der Raumzuordnungs-Controller eine weitere \texttt{GET}-Schnittstelle zum Holen alle Raumzuordnung für eine bestimmte CAD-Datei anbietet.
+Die REST-Controller für die CAD-Dateien und für die Raumzuordnungen sind nach den eben aufgeführten Richtlinien implementiert, mit der Ausnahme, dass der Raumzuordnungs-Controller eine weitere \texttt{GET}-Schnittstelle zum Holen alle Raumzuordnung für eine bestimmte CAD-Datei anbietet.
 Abgesehen davon stellt der Controller für den Export lediglich eine \texttt{POST}-Schnittstelle unter \texttt{api/export/html} bereit, welche den Export als HTML-Datei ausführt und die entstandene Datei zurückliefert.
-Diese Definition passt nicht ins eben diskutierte Schema, da eine \texttt{POST}-Methode das Erstellen einer neuen server-seitigen Resource bedeutet.
+Diese Definition passt nicht ins eben diskutierte Schema, da eine \texttt{POST}-Methode das Erstellen einer neuen server-seitigen Ressource bedeutet.
 Dabei handelt es sich um eine Ausnahmeentscheidung, die getroffen wurde, da die Angular Implementierung eines HTTP-Clients keine Übergabe von JSON als Payload bei der \texttt{GET}-Methode erlaubt~\cite{AngularHttpClientGet}.
 Zwar hätte man die Parameter auch in der angeforderten URL in der Form von \textit{Query Parametern} kodieren können, jedoch scheint die Kodierung umständlich und die Übergabe einer JSON-formatierten Zeichenkette eleganter.
 
@@ -103,11 +103,11 @@ Die restlichen Objektdefinitionen sind aus unserer Sicht intuitiv zu verstehen.
 Die Raumzuordnung \texttt{RoomMapping} bezeichnet eine Zuordnung einer Kategorie zu einem einzelnen Raum.
 Dabei können optional weitere Angaben, wie der Raumname oder eine Beschreibung mitgegeben werden.
 Zur Zuordnung der Kategorie zu einem Raum können zwei Angaben gemacht werden: ein Mapping Vertex oder eine Liste von Vertices.
-Es ist lediglich eine der beiden Angaben zu leisten um die Zuordnung durchführen zu können.
+Es ist lediglich eine der beiden Angaben zu leisten, um die Zuordnung durchführen zu können.
 Bei Verwendung des Mapping Vertex versucht die Webanwendung später den Raum anhand eines einzelnen Vertex zuzuordnen, welcher sich auf der Kontur des Raums befinden muss.
 Die Liste von Vertices kann alternativ verwendet werden, um eine genauere Zuordnung zu ermöglichen, wobei die einzelnen Vertices wieder auf der Kontur des Raums liegen müssen.
 Die Raumzuordnungen werden in einer Sammel-Entität \texttt{RoomMappingCollection} für eine bestimmte CAD-Datei an die REST-Schnittstelle übermittelt.
-Dabei ist die Reihenfolge der Raumzuordnungs-Objekte in der Sammel-Entität zu beachten.
+Dabei ist die Reihenfolge der Raumzuordnung-Objekte in der Sammel-Entität zu beachten.
 Die erste Zuordnung in der Liste wird in der Webanwendung zuerst gezeichnet, die letzte zuletzt.
 Sollten sich also mehrere Raumzuordnungen für denselben Raum in der Liste befinden, werden beide übereinander gezeichnet, wobei die letztere über die erste gezeichnet wird.
 
@@ -124,7 +124,7 @@ Ein Blick zurück auf das Schaubild~\ref{fig:macro-view-diagram} zeigt die noch 
 Dabei handelt es sich um eine Angular Anwendung, einem komponentenbasierten Framework.
 Wir stellen die wichtigsten dieser Komponenten und einige ausgewählte Services in Abbildung~\ref{fig:angular-components} dar.
 Services sind per \textit{Dependency Injection} in Komponenten verwendbare Objekte.
-Meist werden darüber Komponenten übergreifende Funktionalitäten abgebildet, wie in unserem Beispiel die Kommunikation mit dem Server - etwa zur Verwaltung der CAD-Dateien.
+Meist werden darüber komponentenübergreifende Funktionalitäten abgebildet, wie in unserem Beispiel die Kommunikation mit dem Server - etwa zur Verwaltung der CAD-Dateien.
 
 Bei der \texttt{AppComponent} handelt es sich um die Einstiegskomponente in eine Angular Anwendung~\cite{AngularEntryComponent}.
 Von dieser aus sind die anderen Komponenten in einer Baumstruktur dargestellt.
@@ -185,19 +185,19 @@ Ein weiteres Thema, das wir dokumentieren wollen, ist der Raumzuordnungs-Prozess
 Wir haben bereits behandelt, dass die vorhandenen Informationen zur Zuordnung die Attribute \texttt{mappingVertex} oder \texttt{vertices} der Raummapping Objekte sind.
 Der einzelne Vertex sollte in den meisten Fällen ausreichen, um einen Raum korrekt zuzuordnen.
 Voraussetzung dafür ist, dass die gegebene Koordinate nur auf der Kontur des zuzuordnenden Raums liegt.
-Liegt die Koordinate auf mehreren Raumkonturen kann der Algorithmus keine eindeutige Aussage treffen.
+Liegt die Koordinate auf mehreren Raumkonturen, kann der Algorithmus keine eindeutige Aussage treffen.
 Daher gibt es neben dem einzelnen Vertex auch die Möglichkeit mit dem Attribut \texttt{vertices} mehrere Vertices anzugeben.
 Je mehr Vertices angegeben werden, die auf der Raumkontur liegen, desto wahrscheinlicher ist eine erfolgreiche Zuordnung.
 
 Die Zuordnung an sich wird mehrstufig durchgeführt, um möglichst robuste Ergebnisse zu liefern.
-Das bedeutet, dass verschiedene Methoden nacheinander versuchen die Zuordnung vorzunehmen.
+Das bedeutet, dass verschiedene Methoden nacheinander versuchen, die Zuordnung vorzunehmen.
 Dabei ist die erste Methode das sogenannte \textit{Raycasting} mit \textit{three.js}.
 Damit kann geprüft werden, ob Objekte sich mit einer gedachten Linie auf der \(Z\)-Achse (senkrecht zur Gebäudeplanebene) schneiden~\cite{Raycaster}.
 Falls nur ein Vertex gegeben ist, wird das Raycasting für nur diesen Punkt durchgeführt.
 Wird kein Ergebnis zurückgeliefert oder kein eindeutiges, ist die Zuordnung gescheitert.
 Anders bei der Liste an Vertices: hier kann bei einem nicht eindeutigen Ergebnis der nächste Punkt probiert werden.
 Schritt für Schritt werden so die Schnittpunkt-Objekte eliminiert, bis nur noch das Ergebnisobjekt der Zuordnung übrig bleibt.
-Scheitert auch diese Methode wird ein Hashcode für die Liste an Vertices berechnet.
+Scheitert auch diese Methode, wird ein Hashcode für die Liste an Vertices berechnet.
 Dieser Hashcode wird als Schlüssel zum Lookup in einer Hashmap verwendet, welche bereits vorberechnete Hashcodes aller möglichen Räume vorhält.
 Außerdem sind die vorberechneten Hashcodes bereits auf Objekte der Räume zugeordnet.
 Diese Methode hat in unseren Experimenten gut funktioniert, allerdings unter der Voraussetzung, dass die Liste der Vertices genau der entspricht, die in der CAD-Datei vorliegen.
