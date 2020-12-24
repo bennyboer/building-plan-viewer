@@ -14,11 +14,11 @@ Im vorangegangenen Vergleich von CAD-Viewer Programmen haben wir zwei grobe Kate
 Beide Varianten können mit denselben Merkmalen aufwarten und unterscheiden sich somit lediglich in der Art der Bereitstellung.
 Während die web-basierten Anwendungen durch die Eingabe einer URL in der Adresszeile eines Browsers gestartet werden können, müssen die Desktopprogramme lokal auf dem System des Benutzers installiert und gestartet werden.
 
-Anhand der nichtfunktionale Anforderung \textbf{NA1} (\textit{Einfache und schnelle Bereitstellung/Installierbarkeit}) tendieren wir daher eher zu einer Webanwendung.
+Anhand der nicht-funktionalen Anforderung \textbf{NA1} (\textit{Einfache und schnelle Bereitstellung/Installierbarkeit}) tendieren wir daher eher zu einer Webanwendung.
 Diese sind tendenziell schneller zu starten und leichter zu teilen.
 Außerdem stehen geeignete Browser praktisch jedem Endanwender zur Verfügung - selbst auf dem Smartphone.
 
-Im Gegensatz dazu verleitet die nichtfunktionale Anforderung \textbf{NA4} (\textit{Ruckelfreie Navigation im Gebäudeplan}) eher dazu, die Gegenseite der klassischen Desktopanwendungen zu befürworten.
+Im Gegensatz dazu verleitet die nicht-funktionale Anforderung \textbf{NA4} (\textit{Ruckelfreie Navigation im Gebäudeplan}) eher dazu, die Gegenseite der klassischen Desktopanwendungen zu befürworten.
 Webanwendungen sind klassischerweise weniger performant verglichen mit Desktopanwendungen.
 Grund dafür ist die Programmiersprache \textit{JavaScript}, welche von den verschiedenen Browserimplementierungen mehr oder weniger schnell interpretiert wird.
 Allerdings gab es in den letzten Jahren deutliche Performanceverbesserungen~\cite{WebAppMolecular}.
@@ -26,13 +26,13 @@ Beispielsweise gibt es speziell für das Rendering von Visualisierungen mittlerw
 
 Da mit der zu entwickelnden Anwendung möglichst auch äußerst komplexe und große Gebäudepläne dargestellt werden sollen, ist es sinnvoll ebenso auf der WebGL API aufzusetzen.
 Vorhandene JavaScript Bibliotheken wie \textit{three.js}~\cite{ThreeJS} abstrahieren die WebGL API auf einer höheren Ebene, um diese schnell und einfach zu verwenden.
-Das ist für unser Projekt ebenfalls wichtig, da die nichtfunktionale Anforderung \textbf{NA2} eine einfache Wartbarkeit fordert.
+Das ist für unser Projekt ebenfalls wichtig, da die nicht-funktionale Anforderung \textbf{NA2} eine einfache Wartbarkeit fordert.
 Die WebGL API ist an OpenGL ES 2.0 angelehnt und daher nur mit dem nötigen Hintergrundwissen zu verwenden~\cite{WebGL}.
 Die Bibliothek three.js scheint daher geeignet für das Projekt, um eine spätere einfache Wartbarkeit sicherzustellen.
 
 JavaScript ist eine dynamisch typisierte Programmiersprache.
 Alternativen wie \textit{TypeScript} von Microsoft hingegen versuchen eine statische Typisierung um JavaScript zu ermöglichen~\cite{ToTypeOrNotToType}.
-Es wird oft argumentiert, dass eine statische Typisierung zu einem besseres Verständnis des Programmes, neben anderen Vorteilen, führt~\cite{ToTypeOrNotToType}.
+Es wird oft argumentiert, dass eine statische Typisierung zu einem besseren Verständnis des Programmes, neben anderen Vorteilen, führt~\cite{ToTypeOrNotToType}.
 Um die Wartbarkeit unseres Projekts weiter zu erhöhen, soll daher TypeScript als Programmiersprache verwendet werden.
 
 Die Entwicklung einer Webanwendung kann durch die Verwendung eines geeigneten Frameworks vereinfacht werden.
@@ -47,7 +47,7 @@ So kann die Serveranwendung einerseits als HTTP Server fungieren und die Webanwe
 Zusammenfassend soll das Werkzeug zur Gebäudeplanvisualisierung also als \textbf{Webanwendung} entstehen.
 Diese soll in der Programmiersprache \textbf{TypeScript} unter Verwendung des Frameworks \textbf{Angular} verfasst werden.
 Zusätzlich wird \textbf{three.js} zur einfacheren Verwendung der WebGL API verwendet, womit schlussendlich die Gebäudepläne visualisiert werden.
-Die Client-Anwendung soll von einer zusätzlichen Serveranwendung, welche mit Hilfe des Spring Frameworks implementiert wird, bereitgestellt werden.
+Die Client-Anwendung soll von einer zusätzlichen Serveranwendung, welche mithilfe des Spring Frameworks implementiert wird, bereitgestellt werden.
 
 \subsubsection{Vergleich von Parserbibliotheken für CAD-Dateien}
 \label{subsubsec:comparison-parser-libs}
@@ -128,7 +128,7 @@ In der folgenden Tabelle~\ref{table:nutzwert} werden die einzelnen Kriterien fü
 Um eine möglichst zutreffende Einschätzung zu erhalten, wird eine Nutzwertanalyse durchgeführt.
 Für alle Kriterien außer der Lizenz werden die Punkte 1 - 4 vergeben.
 Die Lizenz erhält stattdessen entweder die Punkte 0 (Nicht in Ordnung) oder 1 (In Ordnung).
-Am Ende werden die Punkte, welche sich in der Tabelle neben jeder Einschätzung in Klammern befinden, aufsummiert und die geeigneteste Bibliothek ausgewertet.
+Am Ende werden die Punkte, welche sich in der Tabelle neben jeder Einschätzung in Klammern befinden, aufsummiert und die geeignetste Bibliothek ausgewertet.
 
 \begin{center}
     \bottomcaption{Vergleich der verschiedenen CAD-Datei Parserbibliotheken.}
