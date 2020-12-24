@@ -2,11 +2,11 @@
 \label{sec:summary}
 
 Wir haben im Laufe des Projekts eine Webanwendung erstellt, mit welcher die im Forschungsprojekt \glqq{}NuData Campus\grqq{} erhaltenen Clustering-Ergebnisse geeignet visualisiert werden können.
-Die exportierte Webanwendung mitsamt CAD-Datei und Raumzuordnung kann außerdem per HTML Datei mit beteiligte Personen geteilt werden.
+Die exportierte Webanwendung, mitsamt CAD-Datei und Raumzuordnung, kann außerdem per HTML Datei mit beteiligte Personen geteilt werden.
 
 Nachdem im vorherigen Kapitel die Umsetzung der funktionalen Anforderungen betrachtet wurde, wollen wir zum Abschluss noch einmal die Erfüllung der nicht-funktionalen Anforderungen überprüfen.
 Während der Entwicklung ist besonders auf die Erweiterbarkeit und Wartbarkeit (\textbf{NA2}) der Anwendung geachtet worden, sodass auch in Zukunft nötige Änderungen vorgenommen werden können.
-Wie bereits erläutert ist die Erweiterung um einen neuen CAD-Dateityp bereits architektonisch vorgesehen.
+Wie bereits erläutert, ist die Erweiterung um einen neuen CAD-Dateityp bereits architektonisch vorgesehen.
 Des Weiteren sind jegliche Methoden und Variablen im Quellcode der Anwendung dokumentiert.
 Aus unserer Sicht ist die Anwendung auch übersichtlich und intuitiv zu bedienen (\textbf{NA3}).
 So schlägt die Startansicht bereits die üblichen nächsten Schritte vor.
@@ -21,4 +21,4 @@ So ist die Erweiterung der verwendeten DXF-Parser Bibliothek um das Parsen der s
 Die Erweiterung ermögliche die Raumzuordnung anhand der in der DXF-Datei festgesetzten Annotationspositionen pro Raum.
 Diese Annotationen sind in den meisten Fällen innerhalb der Räume und erlauben zumindest in diesen Fällen eine Zuordnung.
 Ein weiterer Vorteil der \texttt{ATTRIB} Entitäten ist, dass wir die Raumnamen an die richtige Position auf dem Gebäudeplan zeichnen können.
-Bisher werden die Raumnamen lediglich in die Mittel der einzelnen Vertices eines Raumes gezeichnet, was teilweise zu unschönen Ergebnissen führt.
+Bisher werden die Raumnamen lediglich in die Mitte der einzelnen Vertices eines Raumes gezeichnet, was teilweise zu unschönen Ergebnissen führt.
