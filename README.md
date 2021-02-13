@@ -2,6 +2,10 @@
 
 Software system for viewing DXF CAD files in a web interface.
 
+![Example](docs/example.png)
+
+*In the example image we used a CAD file under the MIT-License from https://github.com/jscad/sample-files/blob/master/dxf/dxf-parser/floorplan.dxf.*
+
 ## Getting started
 
 ### Requirements

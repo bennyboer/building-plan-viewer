@@ -1,7 +1,0 @@
-encoding = UTF-8
-language = de
-
-bibliography.file = refs.bib
-bibliography.style = apa
-
-var.author = Benjamin Eder
